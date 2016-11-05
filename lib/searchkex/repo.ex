@@ -1,6 +1,8 @@
 defmodule Searchkex.Repo do
-  import Tirexs.{Bulk, HTTP}
+  import Tirexs.Bulk
   import Searchkex.Schema, only: [get_config: 1, get_index: 1]
+
+  alias Tirexs.{HTTP, Resources}
 
   defmacro __using__(_opts) do
     quote do
@@ -11,25 +13,37 @@ defmodule Searchkex.Repo do
   def insert(record) do
     record
     |> to_collection_url
-    |> post(%{id: record.id}, to_document(record))
+    |> HTTP.post(%{id: record.id}, to_document(record))
   end
 
   def insert!(record) do
     record
     |> to_collection_url
-    |> post!(%{id: record.id}, to_document(record))
+    |> HTTP.post!(%{id: record.id}, to_document(record))
   end
 
   def update(record) do
     record
     |> to_resource_url
-    |> put(to_document(record))
+    |> HTTP.put(to_document(record))
   end
 
   def update!(record) do
     record
     |> to_resource_url
-    |> put!(to_document(record))
+    |> HTTP.put!(to_document(record))
+  end
+
+  def delete(record) do
+    record
+    |> to_resource_url
+    |> HTTP.delete!
+  end
+
+  def delete!(record) do
+    record
+    |> to_resource_url
+    |> HTTP.delete!
   end
 
   def insert_all(schema, records) when is_list(records) do
@@ -46,7 +60,7 @@ defmodule Searchkex.Repo do
   def refresh(schema) do
     schema
     |> get_index
-    |> Tirexs.Resources.bump._refresh
+    |> Resources.bump._refresh
   end
 
   def to_collection_url(record) do

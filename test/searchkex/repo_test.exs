@@ -53,6 +53,18 @@ defmodule Searchkex.RepoTest do
     assert source == %{id: 1, name: "pasta"}
   end
 
+  test "delete/1" do
+    Repo.insert!(%Thing{id: 1})
+    assert {:ok, 200, _} = Repo.delete(%Thing{id: 1, name: "pasta"})
+    {:error, 404, _} = find(1)
+  end
+
+  test "delete!/1" do
+    Repo.insert!(%Thing{id: 1})
+    Repo.delete!(%Thing{id: 1, name: "pasta"})
+    {:error, 404, _} = find(1)
+  end
+
   test "insert_all/1" do
     Repo.insert_all(Thing, [
       %Thing{id: 1, name: "meatloaf"},
