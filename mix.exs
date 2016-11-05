@@ -14,7 +14,7 @@ defmodule Searchkex.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :tirexs, :ecto]]
+    [applications: [:logger, :tirexs]]
   end
 
   # Dependencies can be Hex packages:
@@ -28,8 +28,7 @@ defmodule Searchkex.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:tirexs, "~> 0.8"},
-      {:ecto, "~> 2.0.0"}
+      {:tirexs, "~> 0.8"}
     ]
   end
 end

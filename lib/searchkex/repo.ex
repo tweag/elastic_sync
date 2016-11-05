@@ -1,5 +1,6 @@
 defmodule Searchkex.Repo do
   import Tirexs.{Bulk, HTTP}
+  import Searchkex.Schema, only: [get_config: 1, get_index: 1]
 
   defmacro __using__(_opts) do
     quote do
@@ -9,71 +10,67 @@ defmodule Searchkex.Repo do
 
   def insert(record) do
     record
-    |> to_url
-    |> post(%{id: record.id}, to_payload(record))
+    |> to_collection_url
+    |> post(%{id: record.id}, to_document(record))
   end
 
   def insert!(record) do
     record
-    |> to_url
-    |> post!(%{id: record.id}, to_payload(record))
+    |> to_collection_url
+    |> post!(%{id: record.id}, to_document(record))
   end
 
   def update(record) do
     record
-    |> to_url([record.id])
-    |> put(to_payload(record))
+    |> to_resource_url
+    |> put(to_document(record))
   end
 
   def update!(record) do
     record
-    |> to_url([record.id])
-    |> put!(to_payload(record))
+    |> to_resource_url
+    |> put!(to_document(record))
   end
 
   def insert_all(schema, records) when is_list(records) do
-    payload = bulk([
-      index: schema.searchkex_index_name,
-      type: schema.searchkex_index_type
-    ]) do
-      index Enum.map(records, &to_reindex_payload/1)
-    end
+    data = Enum.map(records, &to_reindex_document/1)
+    payload =
+      schema
+      |> get_config
+      |> bulk(do: index(data))
 
     Tirexs.bump!(payload)._bulk()
+    refresh(schema)
   end
 
   def refresh(schema) do
-    Tirexs.Resources.bump._refresh(schema.searchkex_index_name)
+    schema
+    |> get_index
+    |> Tirexs.Resources.bump._refresh
   end
 
-  def to_url(record, extra) when is_list(extra) do
-    to_url(record) <> "/" <> Enum.join(extra, "/")
-  end
-  def to_url(record) do
-    "/#{get_index_name(record)}/#{get_index_type(record)}"
+  def to_collection_url(record) do
+    config = get_config(record.__struct__)
+    "/#{config.index}/#{config.type}"
   end
 
-  defp get_index_name(record) do
-    record.__struct__.searchkex_index_name
+  def to_resource_url(record) do
+    "#{to_collection_url(record)}/#{record.id}"
   end
 
-  defp get_index_type(record) do
-    record.__struct__.searchkex_index_type
-  end
-
-  defp to_payload(record) do
-    record.__struct__.searchkex_serialize(record)
+  def to_document(record) do
+    record.__struct__.search_data(record)
   end
 
   # Tirexs only accepts a list for bulk
-  defp to_reindex_payload(record) do
-    payload = to_payload(record)
+  defp to_reindex_document(record) do
+    document = to_document(record)
 
     cond do
-      is_list(payload) ->
-        payload
+      is_list(document) ->
+        document
       true ->
-        Enum.into(payload, [])
+        Enum.into(document, [])
     end
   end
 end
