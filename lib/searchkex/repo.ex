@@ -43,6 +43,12 @@ defmodule Searchkex.Repo do
       end
 
       def insert_all(schema, records) when is_list(records) do
+        with {:ok, 200, response} <- bulk_index(schema, records),
+             {:ok, 200, _} <- refresh(schema),
+             do: {:ok, 200, response}
+      end
+
+      def bulk_index(schema, records) when is_list(records) do
         data = Enum.map(records, &to_reindex_document/1)
 
         payload =
@@ -51,7 +57,6 @@ defmodule Searchkex.Repo do
           |> bulk(do: index(data))
 
         Tirexs.bump!(payload)._bulk()
-        refresh(schema)
       end
 
       def refresh(schema) do
