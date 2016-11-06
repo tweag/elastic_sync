@@ -1,8 +1,6 @@
 defmodule Searchkex.RepoTest do
   use ExUnit.Case
   doctest Searchkex.Repo
-
-  alias Searchkex.Repo
   import Tirexs.HTTP
 
   defmodule Thing do
@@ -14,7 +12,13 @@ defmodule Searchkex.RepoTest do
     end
   end
 
-  defp find(id), do: get("/searchkex_test/things/#{id}")
+  defmodule Repo do
+    use Searchkex.Repo
+  end
+
+  defp find(id) do
+    get("/searchkex_test/things/#{id}")
+  end
 
   setup do
     delete("/searchkex_test")
