@@ -21,7 +21,8 @@ defmodule Searchkex.RepoTest do
   end
 
   setup do
-    delete("/searchkex_test")
+    {:ok, 200, _} = delete("/searchkex_test")
+    {:ok, 200, _} = put("/searchkex_test")
     :ok
   end
 

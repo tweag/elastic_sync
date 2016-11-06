@@ -26,6 +26,7 @@ defmodule Searchkex.SyncRepoTest do
 
   setup do
     {:ok, 200, _} = Tirexs.HTTP.delete("/searchkex_test")
+    {:ok, 200, _} = Tirexs.HTTP.put("/searchkex_test")
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Searchkex.TestRepo)
   end
 
