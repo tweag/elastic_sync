@@ -4,6 +4,9 @@ defmodule Searchkex.SyncRepo do
       @ecto unquote(ecto)
       @search unquote(search)
 
+      def __searchkex__(:ecto), do: @ecto
+      def __searchkex__(:search), do: @search
+
       def insert(struct_or_changeset, opts \\ []) do
         sync_one(:insert, 201, struct_or_changeset, opts)
       end
