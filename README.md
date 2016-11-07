@@ -12,13 +12,13 @@ It is definitely *not* an Ecto adapter for ElasticSearch.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+This project is not currently available on Hex, so for now, you'll have to load it from GitHub.
 
   1. Add `elastic_sync` to your list of dependencies in `mix.exs`:
 
     ```elixir
     def deps do
-      [{:elastic_sync, "~> 0.1.0"}]
+      [{:elastic_sync, github: "promptworks/elastic_sync"}]
     end
     ```
 
