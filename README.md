@@ -107,6 +107,14 @@ case SyncRepo.insert(changeset) do
 end
 ```
 
+### Mix.Tasks.ElasticSync.Reindex
+
+Now, to reindex your models, you can simply run:
+
+```
+$ mix elastic_sync.reindex MyApp.SyncRepo MyApp.SomeModel
+```
+
 ### More Configuration
 
 `ElasticSync` is build on top of [`Tirexs`](https://github.com/Zatvobor/tirexs). So, if you need further configuration, you might want to check there.
