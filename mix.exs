@@ -1,8 +1,8 @@
-defmodule Searchkex.Mixfile do
+defmodule ElasticSync.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :searchkex,
+    [app: :elastic_sync,
      version: "0.1.0",
      elixir: "~> 1.3",
      elixirc_paths: elixirc_paths(Mix.env),

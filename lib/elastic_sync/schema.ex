@@ -1,8 +1,8 @@
-defmodule Searchkex.Schema do
+defmodule ElasticSync.Schema do
   defmacro __using__([index: index, type: type]) do
     quote do
-      def __searchkex__(:index), do: unquote(index)
-      def __searchkex__(:type), do: unquote(type)
+      def __elastic_sync__(:index), do: unquote(index)
+      def __elastic_sync__(:type), do: unquote(type)
     end
   end
 
@@ -10,21 +10,21 @@ defmodule Searchkex.Schema do
     raise ArgumentError, """
     You must provide an index name and a type. For example:
 
-        use Searchkex.Schema, index: "something", type: "blah"
+        use ElasticSync.Schema, index: "something", type: "blah"
     """
   end
 
   def get_index(schema) do
-    schema.__searchkex__(:index)
+    schema.__elastic_sync__(:index)
   end
 
   def get_type(schema) do
-    schema.__searchkex__(:type)
+    schema.__elastic_sync__(:type)
   end
 
   def get_config(schema) do
     Enum.reduce([:index, :type], %{}, fn(prop, acc) ->
-      Map.put(acc, prop, schema.__searchkex__(prop))
+      Map.put(acc, prop, schema.__elastic_sync__(prop))
     end)
   end
 end

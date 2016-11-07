@@ -1,11 +1,11 @@
-defmodule Searchkex.SyncRepo do
+defmodule ElasticSync.SyncRepo do
   defmacro __using__([ecto: ecto, search: search]) do
     quote do
       @ecto unquote(ecto)
       @search unquote(search)
 
-      def __searchkex__(:ecto), do: @ecto
-      def __searchkex__(:search), do: @search
+      def __elastic_sync__(:ecto), do: @ecto
+      def __elastic_sync__(:search), do: @search
 
       def insert(struct_or_changeset, opts \\ []) do
         sync_one(:insert, 201, struct_or_changeset, opts)

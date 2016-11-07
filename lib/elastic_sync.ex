@@ -1,0 +1,2 @@
+defmodule ElasticSync do
+end

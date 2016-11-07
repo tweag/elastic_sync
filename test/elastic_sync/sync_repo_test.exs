@@ -1,13 +1,13 @@
-defmodule Searchkex.SyncRepoTest do
+defmodule ElasticSync.SyncRepoTest do
   use ExUnit.Case
-  doctest Searchkex.SyncRepo
+  doctest ElasticSync.SyncRepo
 
-  alias Searchkex.TestSyncRepo
+  alias ElasticSync.TestSyncRepo
 
   defmodule Thing do
     use Ecto.Schema
     import Ecto.Changeset
-    use Searchkex.Schema, index: "searchkex_test", type: "things"
+    use ElasticSync.Schema, index: "elastic_sync_test", type: "things"
 
     schema "things" do
       field :name, :string
@@ -25,9 +25,9 @@ defmodule Searchkex.SyncRepoTest do
   end
 
   setup do
-    {:ok, 200, _} = Tirexs.HTTP.delete("/searchkex_test")
-    {:ok, 200, _} = Tirexs.HTTP.put("/searchkex_test")
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Searchkex.TestRepo)
+    {:ok, 200, _} = Tirexs.HTTP.delete("/elastic_sync_test")
+    {:ok, 200, _} = Tirexs.HTTP.put("/elastic_sync_test")
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(ElasticSync.TestRepo)
   end
 
   test "insert with a struct" do

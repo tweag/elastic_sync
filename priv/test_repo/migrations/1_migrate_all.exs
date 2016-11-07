@@ -1,4 +1,4 @@
-defmodule Searchkex.TestRepo.Migrations.MigrateAll do
+defmodule ElasticSync.TestRepo.Migrations.MigrateAll do
   use Ecto.Migration
 
   def change do

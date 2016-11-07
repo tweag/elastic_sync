@@ -1,11 +1,11 @@
-defmodule Searchkex.RepoTest do
+defmodule ElasticSync.RepoTest do
   use ExUnit.Case
-  doctest Searchkex.Repo
+  doctest ElasticSync.Repo
   import Tirexs.HTTP
 
   defmodule Thing do
     defstruct [:id, :name]
-    use Searchkex.Schema, index: "searchkex_test", type: "things"
+    use ElasticSync.Schema, index: "elastic_sync_test", type: "things"
 
     def search_data(record) do
       Map.take(record, [:id, :name])
@@ -13,25 +13,25 @@ defmodule Searchkex.RepoTest do
   end
 
   defmodule Repo do
-    use Searchkex.Repo
+    use ElasticSync.Repo
   end
 
   defp find(id) do
-    get("/searchkex_test/things/#{id}")
+    get("/elastic_sync_test/things/#{id}")
   end
 
   setup do
-    {:ok, 200, _} = delete("/searchkex_test")
-    {:ok, 200, _} = put("/searchkex_test")
+    {:ok, 200, _} = delete("/elastic_sync_test")
+    {:ok, 200, _} = put("/elastic_sync_test")
     :ok
   end
 
   test "to_collection_url/1 generates a valid url" do
-    assert Repo.to_collection_url(%Thing{}) == "/searchkex_test/things"
+    assert Repo.to_collection_url(%Thing{}) == "/elastic_sync_test/things"
   end
 
   test "to_resource_url/2 generates a valid url" do
-    assert Repo.to_resource_url(%Thing{id: 1}) == "/searchkex_test/things/1"
+    assert Repo.to_resource_url(%Thing{id: 1}) == "/elastic_sync_test/things/1"
   end
 
   test "insert/1" do
@@ -77,7 +77,7 @@ defmodule Searchkex.RepoTest do
       %Thing{id: 3, name: "sausage"},
     ])
 
-    {:ok, 200, %{hits: %{hits: hits}}} = get("/searchkex_test/things/_search")
+    {:ok, 200, %{hits: %{hits: hits}}} = get("/elastic_sync_test/things/_search")
     assert length(hits) == 3
   end
 end

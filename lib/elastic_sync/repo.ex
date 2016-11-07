@@ -1,8 +1,8 @@
-defmodule Searchkex.Repo do
+defmodule ElasticSync.Repo do
   defmacro __using__(_opts) do
     quote do
       import Tirexs.Bulk
-      import Searchkex.Schema, only: [get_config: 1, get_index: 1]
+      import ElasticSync.Schema, only: [get_config: 1, get_index: 1]
 
       alias Tirexs.{HTTP, Resources}
 

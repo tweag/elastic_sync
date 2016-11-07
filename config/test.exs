@@ -1,11 +1,11 @@
 use Mix.Config
 
-config :searchkex,
-  ecto_repos: [Searchkex.TestRepo]
+config :elastic_sync,
+  ecto_repos: [ElasticSync.TestRepo]
 
-config :searchkex, Searchkex.TestRepo,
+config :elastic_sync, ElasticSync.TestRepo,
   hostname: "localhost",
-  database: "searchkex_test",
+  database: "elastic_sync_test",
   adapter: Ecto.Adapters.Postgres,
   pool: Ecto.Adapters.SQL.Sandbox
 

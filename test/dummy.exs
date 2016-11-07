@@ -1,13 +1,13 @@
-defmodule Searchkex.TestRepo do
-  use Ecto.Repo, otp_app: :searchkex
+defmodule ElasticSync.TestRepo do
+  use Ecto.Repo, otp_app: :elastic_sync
 end
 
-defmodule Searchkex.TestSearchRepo do
-  use Searchkex.Repo
+defmodule ElasticSync.TestSearchRepo do
+  use ElasticSync.Repo
 end
 
-defmodule Searchkex.TestSyncRepo do
-  use Searchkex.SyncRepo,
-    ecto: Searchkex.TestRepo,
-    search: Searchkex.TestSearchRepo
+defmodule ElasticSync.TestSyncRepo do
+  use ElasticSync.SyncRepo,
+    ecto: ElasticSync.TestRepo,
+    search: ElasticSync.TestSearchRepo
 end

@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-#     config :searchkex, key: :value
+#     config :elastic_sync, key: :value
 #
 # And access this configuration in your application as:
 #
-#     Application.get_env(:searchkex, :key)
+#     Application.get_env(:elastic_sync, :key)
 #
 # Or configure a 3rd-party app:
 #

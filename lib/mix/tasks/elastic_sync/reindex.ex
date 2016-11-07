@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.Searchkex.Reindex do
+defmodule Mix.Tasks.ElasticSync.Reindex do
   def run(args) do
     Mix.Task.run "loadpaths", args
 
@@ -8,8 +8,8 @@ defmodule Mix.Tasks.Searchkex.Reindex do
 
     case parse_args(args) do
       {:ok, schema, sync_repo} ->
-        ecto_repo = sync_repo.__searchkex__(:ecto)
-        search_repo = sync_repo.__searchkex__(:search)
+        ecto_repo = sync_repo.__elastic_sync__(:ecto)
+        search_repo = sync_repo.__elastic_sync__(:search)
         Mix.Ecto.ensure_started(ecto_repo, args)
         reindex(schema, ecto_repo, search_repo, args)
       {:error, message} ->
@@ -26,20 +26,20 @@ defmodule Mix.Tasks.Searchkex.Reindex do
     {:error, "Wrong number of arguments."}
   end
   defp parse_args([sync_repo_name, schema_name | _args]) do
-    with {:ok, schema} <- parse_searchkex(schema_name),
-         {:ok, sync_repo} <- parse_searchkex(sync_repo_name),
+    with {:ok, schema} <- parse_elastic_sync(schema_name),
+         {:ok, sync_repo} <- parse_elastic_sync(sync_repo_name),
          do: {:ok, schema, sync_repo}
   end
 
-  defp parse_searchkex(name) do
+  defp parse_elastic_sync(name) do
     mod = Module.concat([name])
 
     case Code.ensure_compiled(mod) do
       {:module, _} ->
-        if function_exported?(mod, :__searchkex__, 1) do
+        if function_exported?(mod, :__elastic_sync__, 1) do
           {:ok, mod}
         else
-          {:error, "Module #{inspect mod} isn't using searchkex."}
+          {:error, "Module #{inspect mod} isn't using elastic_sync."}
         end
       {:error, error} ->
         {:error, "Could not load #{inspect mod}, error: #{inspect error}."}
