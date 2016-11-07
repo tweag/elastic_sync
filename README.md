@@ -58,7 +58,7 @@ defmodule MyApp.SomeModel do
   @doc """
   Convert a struct to a plain ol' map. This will become our document.
   """
-  def search_data(record) do
+  def to_search_document(record) do
     Map.take(record, [:id, :name])
   end
 end

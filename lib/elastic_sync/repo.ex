@@ -75,7 +75,7 @@ defmodule ElasticSync.Repo do
       end
 
       def to_document(record) do
-        record.__struct__.search_data(record)
+        record.__struct__.to_search_document(record)
       end
 
       # Tirexs only accepts a list for bulk

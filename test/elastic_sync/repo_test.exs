@@ -10,8 +10,8 @@ defmodule ElasticSync.RepoTest do
     defstruct [:id, :name]
     use ElasticSync.Schema, index: "elastic_sync_test", type: "things"
 
-    def search_data(record) do
-      Map.take(record, [:id, :name])
+    def to_search_document(struct) do
+      Map.take(struct, [:id, :name])
     end
   end
 

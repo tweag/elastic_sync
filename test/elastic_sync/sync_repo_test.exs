@@ -13,7 +13,7 @@ defmodule ElasticSync.SyncRepoTest do
       field :name, :string
     end
 
-    def search_data(record) do
+    def to_search_document(record) do
       Map.take(record, [:id, :name])
     end
 
