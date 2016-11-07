@@ -21,8 +21,8 @@ defmodule ElasticSync.RepoTest do
   end
 
   setup do
-    {:ok, 200, _} = delete("/elastic_sync_test")
-    {:ok, 200, _} = put("/elastic_sync_test")
+    delete("/elastic_sync_test")
+    put("/elastic_sync_test")
     :ok
   end
 
