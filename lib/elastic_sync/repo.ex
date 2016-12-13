@@ -59,6 +59,23 @@ defmodule ElasticSync.Repo do
         Tirexs.bump!(payload)._bulk()
       end
 
+      # TODO: Allow developers to control mappings here
+      def create_index(name) do
+        HTTP.put("/#{name}")
+      end
+
+      def remove_index(name) do
+        HTTP.delete("/#{name}")
+      end
+
+      def swap_alias(index_name, alias_name) do
+        HTTP.post("/_aliases", %{
+          actions: [
+            %{ add: %{ index: alias_name, alias: index_name} }
+          ]
+        })
+      end
+
       def refresh(schema, opts \\ []) do
         schema
         |> get_index(opts)

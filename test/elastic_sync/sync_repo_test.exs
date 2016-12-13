@@ -2,27 +2,7 @@ defmodule ElasticSync.SyncRepoTest do
   use ExUnit.Case
   doctest ElasticSync.SyncRepo
 
-  alias ElasticSync.TestSyncRepo
-
-  defmodule Thing do
-    use Ecto.Schema
-    import Ecto.Changeset
-    use ElasticSync.Schema, index: "elastic_sync_test", type: "things"
-
-    schema "things" do
-      field :name, :string
-    end
-
-    def to_search_document(record) do
-      Map.take(record, [:id, :name])
-    end
-
-    def changeset(struct, params \\ %{}) do
-      struct
-      |> cast(params, [:name])
-      |> validate_required([:name])
-    end
-  end
+  alias ElasticSync.{Thing, TestSyncRepo}
 
   setup do
     Tirexs.HTTP.delete("/elastic_sync_test")

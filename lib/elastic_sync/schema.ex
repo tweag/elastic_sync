@@ -14,6 +14,12 @@ defmodule ElasticSync.Schema do
     """
   end
 
+  def get_alias(schema, opts \\ []) do
+    index = get_index(schema, opts)
+    time = DateTime.utc_now() |> DateTime.to_unix()
+    "#{index}_#{time}"
+  end
+
   def get_index(schema, opts \\ []) do
     schema
     |> get_config(opts)

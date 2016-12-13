@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.ElasticSync.Reindex do
+  import ElasticSync.Schema, only: [get_index: 1, get_alias: 1]
+
   def run(args) do
     Mix.Task.run "loadpaths", args
 
@@ -18,9 +20,23 @@ defmodule Mix.Tasks.ElasticSync.Reindex do
   end
 
   def reindex(schema, ecto_repo, search_repo, _args) do
-    # {:ok, alias_name} = search_repo.create_alias()
-    {:ok, _, _} = search_repo.bulk_index(schema, ecto_repo.all(schema))
-    {:ok, _, _} = search_repo.refresh(schema)
+    records = ecto_repo.all(schema)
+    index_name = get_index(schema)
+    alias_name = get_alias(schema)
+
+    # Create a new index with the name of the alias
+    {:ok, _, _} = search_repo.create_index(alias_name)
+
+    # Populate the new index
+    {:ok, _, _} = search_repo.bulk_index(schema, records, index: alias_name)
+
+    # Refresh the index
+    {:ok, _, _} = search_repo.refresh(schema, index: alias_name)
+
+    # Alias our new index as the old index
+    {:ok, _, _} = search_repo.swap_alias(index_name, alias_name)
+
+    # TODO: Clean up old aliases...
   end
 
   defp parse_args(args) when length(args) < 2 do
