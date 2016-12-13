@@ -14,17 +14,21 @@ defmodule ElasticSync.Schema do
     """
   end
 
-  def get_index(schema) do
-    schema.__elastic_sync__(:index)
+  def get_index(schema, opts \\ []) do
+    schema
+    |> get_config(opts)
+    |> Keyword.get(:index)
   end
 
-  def get_type(schema) do
-    schema.__elastic_sync__(:type)
+  def get_type(schema, opts \\ []) do
+    schema
+    |> get_config(opts)
+    |> Keyword.get(:type)
   end
 
-  def get_config(schema) do
-    Enum.reduce([:index, :type], %{}, fn(prop, acc) ->
-      Map.put(acc, prop, schema.__elastic_sync__(prop))
-    end)
+  def get_config(schema, opts \\ []) do
+    index = schema.__elastic_sync__(:index)
+    type = schema.__elastic_sync__(:type)
+    Keyword.merge([index: index, type: type], opts)
   end
 end

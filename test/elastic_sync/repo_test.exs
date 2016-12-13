@@ -29,8 +29,16 @@ defmodule ElasticSync.RepoTest do
     assert TestSearchRepo.to_collection_url(%Thing{}) == "/elastic_sync_test/things"
   end
 
-  test "to_resource_url/2 generates a valid url" do
+  test "to_collection_url/2 generates a value url with overrides" do
+    assert TestSearchRepo.to_collection_url(%Thing{}, index: "foo") == "/foo/things"
+  end
+
+  test "to_resource_url/1 generates a valid url" do
     assert TestSearchRepo.to_resource_url(%Thing{id: 1}) == "/elastic_sync_test/things/1"
+  end
+
+  test "to_resource_url/2 generates a valid url with overrides" do
+    assert TestSearchRepo.to_resource_url(%Thing{id: 1}, index: "foo") == "/foo/things/1"
   end
 
   test "insert/1" do
