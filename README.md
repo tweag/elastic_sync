@@ -32,17 +32,6 @@ This project is not currently available on Hex, so for now, you'll have to load 
 
 ## Usage
 
-### ElasticSync.Repo
-
-First, you'll want to create a repo. This is the module that actually talks to ElasticSearch.
-
-```elixir
-defmodule MyApp.SearchRepo do
-  use ElasticSync.Repo
-end
-```
-
-
 ### ElasticSync.Schema
 
 Like Ecto, ElasticSync has a concept of a schema and a repo. Here's how you'd configure your schema:
@@ -67,13 +56,14 @@ end
 Great. Now, you communicate with ElasticSearch.
 
 ```elixir
-alias MyApp.{SearchRepo, SomeModel}
+alias MyApp.SomeModel
+alias ElasticSync.Repo
 
-{:ok, 201, _response} = SearchRepo.insert(%SomeModel{id: 1})
-{:ok, 200, _response} = SearchRepo.update(%SomeModel{id: 1, name: "meatloaf"})
-{:ok, 200, _response} = SearchRepo.delete(%SomeModel{id: 1})
+{:ok, 201, _response} = Repo.insert(%SomeModel{id: 1})
+{:ok, 200, _response} = Repo.update(%SomeModel{id: 1, name: "meatloaf"})
+{:ok, 200, _response} = Repo.delete(%SomeModel{id: 1})
 
-{:ok, 200, _response} = SearchRepo.insert_all(SomeModel, [
+{:ok, 200, _response} = Repo.insert_all(SomeModel, [
   %SomeModel{id: 1, name: "cheesecake"},
   %SomeModel{id: 2, name: "applesauce"},
   %SomeModel{id: 3, name: "sausage"}
@@ -86,9 +76,7 @@ Imagine you're building an app that uses Ecto. You want to synchronize changes t
 
 ```elixir
 defmodule MyApp.SyncRepo do
-  use ElasticSync.SyncRepo,
-    ecto: MyApp.Repo,
-    search: MyApp.SearchRepo
+  use ElasticSync.SyncRepo, ecto: MyApp.Repo
 end
 ```
 
