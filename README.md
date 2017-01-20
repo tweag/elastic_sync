@@ -1,5 +1,7 @@
 # ElasticSync
 
+[![Build Status](https://travis-ci.org/promptworks/elastic_sync.svg?branch=master)](https://travis-ci.org/promptworks/elastic_sync)
+
 This project is in its infancy. So unless you're interested in contributing, you should probably move along.
 
 This project is inspired by [searchkick](https://github.com/ankane/searchkick). It aims to provide:
