@@ -1,5 +1,8 @@
 defmodule ElasticSync.SyncRepo do
-  defmacro __using__([ecto: ecto, search: search]) do
+  defmacro __using__(opts) do
+    ecto = Keyword.fetch!(opts, :ecto)
+    search = Keyword.get(opts, :search, ElasticSync.Repo)
+
     quote do
       import ElasticSync.Schema, only: [get_index: 1, get_alias: 1]
 
