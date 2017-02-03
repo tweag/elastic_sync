@@ -30,8 +30,8 @@ defmodule ElasticSync.Mixfile do
   defp deps do
     [
       {:tirexs, "~> 0.8"},
-      {:ecto, "~> 2.0.0", optional: true},
-      {:ecto, "~> 2.0.0", only: [:dev, :test]},
+      {:ecto, "~> 2.0", optional: true},
+      {:ecto, "~> 2.0", only: [:dev, :test]},
       {:postgrex, ">= 0.0.0", only: [:test]}
     ]
   end
