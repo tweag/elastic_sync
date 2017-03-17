@@ -11,6 +11,7 @@ defmodule Mix.Tasks.ElasticSync.Reindex do
         ecto_repo = sync_repo.__elastic_sync__(:ecto)
         Mix.Ecto.ensure_started(ecto_repo, args)
         sync_repo.reindex(schema)
+        :ok
       {:error, message} ->
         Mix.raise(message)
     end
