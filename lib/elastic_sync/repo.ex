@@ -86,6 +86,12 @@ defmodule ElasticSync.Repo do
     HTTP.delete("/#{name}")
   end
 
+  def get_alias(name) do
+    now = DateTime.utc_now()
+    stamp = DateTime.to_unix(now)
+    "#{name}-#{stamp}"
+  end
+
   def swap_alias(index_name, alias_name) do
     payload = %{
       actions: [

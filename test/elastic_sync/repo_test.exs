@@ -130,4 +130,19 @@ defmodule ElasticSync.RepoTest do
     {:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Thing, query)
     assert length(hits) == 1
   end
+
+  test "get_alias/1" do
+    assert Regex.match?(~r"foobar-\d{10}", Repo.get_alias("foobar"))
+  end
+
+  test "index creation and deletion" do
+    name = "elastic_sync_test2"
+
+    assert {:error, 404, _} = get("/#{name}")
+    Repo.create_index(name)
+    assert {:ok, 200, _} = get("/#{name}")
+
+    Repo.remove_index(name)
+    assert {:error, 404, _} = get("/#{name}")
+  end
 end

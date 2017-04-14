@@ -1,5 +1,5 @@
 defmodule ElasticSync.SyncRepo do
-  import ElasticSync.Schema, only: [get_index: 1, get_alias: 1]
+  alias ElasticSync.{Schema, Repo}
 
   defmacro __using__(opts) do
     ecto = Keyword.fetch!(opts, :ecto)
@@ -80,8 +80,8 @@ defmodule ElasticSync.SyncRepo do
   end
 
   def reindex({ecto, search}, schema) do
-    index_name = get_index(schema)
-    alias_name = get_alias(schema)
+    index_name = Schema.get_index(schema)
+    alias_name = Repo.get_alias(index_name)
 
     with {:ok, _, _} <- search.create_index(alias_name),
          {:ok, :ok}  <- bulk_index({ecto, search}, schema, index: alias_name),
