@@ -28,12 +28,10 @@ defmodule ElasticSync.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [
-      {:tirexs, "~> 0.8"},
-      {:ecto, "~> 2.0", optional: true},
-      {:ecto, "~> 2.0", only: [:dev, :test]},
-      {:postgrex, ">= 0.0.0", only: [:test]}
-    ]
+    [{:tirexs, "~> 0.8"},
+     {:ecto, "~> 2.1", optional: true},
+     {:ecto, "~> 2.1", only: [:dev, :test]},
+     {:postgrex, ">= 0.0.0", only: [:test]}]
   end
 
   defp elixirc_paths(:test), do: elixirc_paths() ++ ["test/dummy.exs"]

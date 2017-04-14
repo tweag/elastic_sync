@@ -80,12 +80,11 @@ defmodule ElasticSync.SyncRepo do
   end
 
   def reindex({ecto, search}, schema) do
-    records = ecto.all(schema)
     index_name = get_index(schema)
     alias_name = get_alias(schema)
 
     with {:ok, _, _} <- search.create_index(alias_name),
-         {:ok, _, _} <- search.bulk_index(schema, records, index: alias_name),
+         {:ok, :ok}  <- bulk_index({ecto, search}, schema, index: alias_name),
          {:ok, _, _} <- search.refresh(schema, index: alias_name),
          {:ok, _, _} <- search.swap_alias(index_name, alias_name),
          do: :ok
@@ -94,6 +93,16 @@ defmodule ElasticSync.SyncRepo do
     mod
     |> get_repos()
     |> reindex(schema)
+  end
+
+  defp bulk_index({ecto, search}, schema, opts) do
+    ecto.transaction fn ->
+      schema
+      |> ecto.stream(max_rows: 500)
+      |> Stream.chunk(500)
+      |> Stream.each(&search.bulk_index(schema, &1, opts))
+      |> Stream.run()
+    end
   end
 
   defp sync_one({ecto, search}, action, args) do
