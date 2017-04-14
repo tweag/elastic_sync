@@ -44,40 +44,42 @@ defmodule ElasticSync.SyncRepo do
   end
 
   def insert(mod, struct_or_changeset, opts \\ []) do
-    sync_one(:insert, mod, [struct_or_changeset, opts])
+    sync_one(mod, :insert, [struct_or_changeset, opts])
   end
 
   def insert!(mod, struct_or_changeset, opts \\ []) do
-    sync_one!(:insert!, mod, [struct_or_changeset, opts])
+    sync_one!(mod, :insert!, [struct_or_changeset, opts])
   end
 
   def update(mod, changeset, opts \\ []) do
-    sync_one(:update, mod, [changeset, opts])
+    sync_one(mod, :update, [changeset, opts])
   end
 
   def update!(mod, changeset, opts \\ []) do
-    sync_one!(:update!, mod, [changeset, opts])
+    sync_one!(mod, :update!, [changeset, opts])
   end
 
   def delete(mod, struct_or_changeset, opts \\ []) do
-    sync_one(:delete, mod, [struct_or_changeset, opts])
+    sync_one(mod, :delete, [struct_or_changeset, opts])
   end
 
   def delete!(mod, struct_or_changeset, opts \\ []) do
-    sync_one!(:delete!, mod, [struct_or_changeset, opts])
+    sync_one!(mod, :delete!, [struct_or_changeset, opts])
   end
 
-  def insert_all(mod, schema_or_source, entries, opts \\ []) do
-    {ecto, search} = get_repos(mod)
-
+  def insert_all(mod, schema_or_source, entries, opts \\ [])
+  def insert_all({ecto, search}, schema_or_source, entries, opts) do
     with {:ok, records} <- ecto.insert_all(schema_or_source, entries, opts),
          {:ok, _, _} <- search.insert_all(schema_or_source, records),
          do: {:ok, records}
   end
+  def insert_all(mod, schema_or_source, entries, opts) do
+    mod
+    |> get_repos()
+    |> insert_all(schema_or_source, entries, opts)
+  end
 
-  def reindex(mod, schema) do
-    {ecto, search} = get_repos(mod)
-
+  def reindex({ecto, search}, schema) do
     records = ecto.all(schema)
     index_name = get_index(schema)
     alias_name = get_alias(schema)
@@ -88,20 +90,32 @@ defmodule ElasticSync.SyncRepo do
          {:ok, _, _} <- search.swap_alias(index_name, alias_name),
          do: :ok
   end
+  def reindex(mod, schema) do
+    mod
+    |> get_repos()
+    |> reindex(schema)
+  end
 
-  defp sync_one(action, mod, args) do
-    {ecto, search} = get_repos(mod)
-
+  defp sync_one({ecto, search}, action, args) do
     with {:ok, record} <- apply(ecto, action, args),
          {:ok, _, _} <- apply(search, action, [record]),
          do: {:ok, record}
   end
+  defp sync_one(mod, action, args) do
+    mod
+    |> get_repos()
+    |> sync_one(action, args)
+  end
 
-  defp sync_one!(action, mod, args) do
-    {ecto, search} = get_repos(mod)
+  defp sync_one!({ecto, search}, action, args) do
     result = apply(ecto, action, args)
     apply(search, action, [result])
     result
+  end
+  defp sync_one!(mod, action, args) do
+    mod
+    |> get_repos()
+    |> sync_one!(action, args)
   end
 
   defp get_repos(mod) do
