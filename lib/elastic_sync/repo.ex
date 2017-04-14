@@ -4,14 +4,34 @@ defmodule ElasticSync.Repo do
 
   alias Tirexs.{HTTP, Resources}
 
+  def search(queryable, query, opts \\ [])
+  def search(queryable, query, opts) when is_binary(query) do
+    queryable
+    |> to_search_url(opts)
+    |> HTTP.get(%{q: query})
+  end
+  def search(queryable, [search: query] = dsl, opts) do
+    opts =
+      dsl
+      |> Keyword.take([:index, :type])
+      |> Keyword.merge(opts)
+
+    search(queryable, query, opts)
+  end
+  def search(queryable, query, opts) do
+    queryable
+    |> to_search_url(opts)
+    |> HTTP.post(query)
+  end
+
   def insert(record, opts \\ []) do
-    record
+    record.__struct__
     |> to_collection_url(opts)
     |> HTTP.post(%{id: record.id}, to_document(record))
   end
 
   def insert!(record, opts \\ []) do
-    record
+    record.__struct__
     |> to_collection_url(opts)
     |> HTTP.post!(%{id: record.id}, to_document(record))
   end
@@ -74,20 +94,24 @@ defmodule ElasticSync.Repo do
     })
   end
 
-  def refresh(schema, opts \\ []) do
-    schema
+  def refresh(queryable, opts \\ []) do
+    queryable
     |> get_index(opts)
     |> Resources.bump._refresh
   end
 
-  def to_collection_url(record, opts \\ []) do
-    index = get_index(record.__struct__, opts)
-    type = get_type(record.__struct__, opts)
+  def to_search_url(queryable, opts \\ []) do
+    to_collection_url(queryable, opts) <> "/_search"
+  end
+
+  def to_collection_url(queryable, opts \\ []) do
+    index = get_index(queryable, opts)
+    type = get_type(queryable, opts)
     "/#{index}/#{type}"
   end
 
   def to_resource_url(record, opts \\ []) do
-    "#{to_collection_url(record, opts)}/#{record.id}"
+    "#{to_collection_url(record.__struct__, opts)}/#{record.id}"
   end
 
   def to_document(record) do

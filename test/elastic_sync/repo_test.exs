@@ -26,11 +26,11 @@ defmodule ElasticSync.RepoTest do
   end
 
   test "to_collection_url/1 generates a valid url" do
-    assert Repo.to_collection_url(%Thing{}) == "/elastic_sync_test/things"
+    assert Repo.to_collection_url(Thing) == "/elastic_sync_test/things"
   end
 
   test "to_collection_url/2 generates a value url with overrides" do
-    assert Repo.to_collection_url(%Thing{}, index: "foo") == "/foo/things"
+    assert Repo.to_collection_url(Thing, index: "foo") == "/foo/things"
   end
 
   test "to_resource_url/1 generates a valid url" do
@@ -78,13 +78,56 @@ defmodule ElasticSync.RepoTest do
   end
 
   test "insert_all/1" do
-    Repo.insert_all(Thing, [
+    Repo.insert_all Thing, [
       %Thing{id: 1, name: "meatloaf"},
       %Thing{id: 2, name: "pizza"},
       %Thing{id: 3, name: "sausage"},
-    ])
+    ]
 
     {:ok, 200, %{hits: %{hits: hits}}} = get("/elastic_sync_test/things/_search")
     assert length(hits) == 3
+  end
+
+  test "search/3" do
+    Repo.insert_all Thing, [
+      %Thing{id: 1, name: "meatloaf"},
+      %Thing{id: 2, name: "pizza"}
+    ]
+
+    {:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Thing, "meatloaf")
+    assert length(hits) == 1
+  end
+
+  test "search/3 with map" do
+    Repo.insert_all Thing, [
+      %Thing{id: 1, name: "meatloaf"},
+      %Thing{id: 2, name: "pizza"}
+    ]
+
+    query = %{query: %{bool: %{must: [%{match: %{name: "meatloaf"}}]}}}
+    {:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Thing, query)
+    assert length(hits) == 1
+  end
+
+  test "search/3 with DSL" do
+    import Tirexs.Search
+
+    Repo.insert_all Thing, [
+      %Thing{id: 1, name: "meatloaf"},
+      %Thing{id: 2, name: "pizza"}
+    ]
+
+    query = search do
+      query do
+        bool do
+          must do
+            match "name", "meatloaf"
+          end
+        end
+      end
+    end
+
+    {:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Thing, query)
+    assert length(hits) == 1
   end
 end
