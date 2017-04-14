@@ -87,11 +87,13 @@ defmodule ElasticSync.Repo do
   end
 
   def swap_alias(index_name, alias_name) do
-    HTTP.post("/_aliases", %{
+    payload = %{
       actions: [
         %{ add: %{ index: alias_name, alias: index_name} }
       ]
-    })
+    }
+
+    HTTP.post("/_aliases", payload)
   end
 
   def refresh(queryable, opts \\ []) do

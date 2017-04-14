@@ -6,15 +6,23 @@ defmodule Mix.Tasks.ElasticSync.Reindex do
       Mix.Project.compile(args)
     end
 
-    case parse_args(args) do
-      {:ok, schema, sync_repo} ->
-        ecto_repo = sync_repo.__elastic_sync__(:ecto)
-        Mix.Ecto.ensure_started(ecto_repo, args)
-        sync_repo.reindex(schema)
+    case reindex(args) do
+      :ok ->
         :ok
-      {:error, message} ->
-        Mix.raise(message)
+      {:error, error} ->
+        Mix.raise "Reindex failed, error: #{inspect error}"
     end
+  end
+
+  def reindex(args) do
+    with {:ok, schema, sync_repo} <- parse_args(args),
+         {:ok, _, _} <- ensure_started(sync_repo, args),
+         :ok <- sync_repo.reindex(schema),
+         do: :ok
+  end
+
+  defp ensure_started(sync_repo, args) do
+    Mix.Ecto.ensure_started(sync_repo.__elastic_sync__(:ecto), args)
   end
 
   defp parse_args(args) when length(args) < 2 do

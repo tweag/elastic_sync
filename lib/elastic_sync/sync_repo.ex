@@ -6,34 +6,31 @@ defmodule ElasticSync.SyncRepo do
     search = Keyword.get(opts, :search, ElasticSync.Repo)
 
     quote do
-      @ecto unquote(ecto)
-      @search unquote(search)
-
-      def __elastic_sync__(:ecto), do: @ecto
-      def __elastic_sync__(:search), do: @search
+      def __elastic_sync__(:ecto), do: unquote(ecto)
+      def __elastic_sync__(:search), do: unquote(search)
 
       def insert(struct_or_changeset, opts \\ []) do
-        sync(:insert, [struct_or_changeset, opts])
+        ElasticSync.SyncRepo.insert(__MODULE__, struct_or_changeset, opts)
       end
 
       def insert!(struct_or_changeset, opts \\ []) do
-        sync(:insert!, [struct_or_changeset, opts])
+        ElasticSync.SyncRepo.insert!(__MODULE__, struct_or_changeset, opts)
       end
 
       def update(changeset, opts \\ []) do
-        sync(:update, [changeset, opts])
+        ElasticSync.SyncRepo.update(__MODULE__, changeset, opts)
       end
 
       def update!(changeset, opts \\ []) do
-        sync(:update!, [changeset, opts])
+        ElasticSync.SyncRepo.update!(__MODULE__, changeset, opts)
       end
 
       def delete(struct_or_changeset, opts \\ []) do
-        sync(:delete, [struct_or_changeset, opts])
+        ElasticSync.SyncRepo.delete(__MODULE__, struct_or_changeset, opts)
       end
 
       def delete!(struct_or_changeset, opts \\ []) do
-        sync(:delete!, [struct_or_changeset, opts])
+        ElasticSync.SyncRepo.delete!(__MODULE__, struct_or_changeset, opts)
       end
 
       def insert_all(schema_or_source, entries, opts \\ []) do
@@ -42,10 +39,6 @@ defmodule ElasticSync.SyncRepo do
 
       def reindex(schema) do
         ElasticSync.SyncRepo.reindex(__MODULE__, schema)
-      end
-
-      defp sync(action, args) do
-        apply(ElasticSync.SyncRepo, action, [__MODULE__] ++ args)
       end
     end
   end
@@ -89,17 +82,11 @@ defmodule ElasticSync.SyncRepo do
     index_name = get_index(schema)
     alias_name = get_alias(schema)
 
-    # Create a new index with the name of the alias
-    {:ok, _, _} = search.create_index(alias_name)
-
-    # Populate the new index
-    {:ok, _, _} = search.bulk_index(schema, records, index: alias_name)
-
-    # Refresh the index
-    {:ok, _, _} = search.refresh(schema, index: alias_name)
-
-    # Alias our new index as the old index
-    {:ok, _, _} = search.swap_alias(index_name, alias_name)
+    with {:ok, _, _} <- search.create_index(alias_name),
+         {:ok, _, _} <- search.bulk_index(schema, records, index: alias_name),
+         {:ok, _, _} <- search.refresh(schema, index: alias_name),
+         {:ok, _, _} <- search.swap_alias(index_name, alias_name),
+         do: :ok
   end
 
   defp sync_one(action, mod, args) do
