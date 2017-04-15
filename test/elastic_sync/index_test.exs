@@ -39,7 +39,7 @@ defmodule ElasticSync.IndexTest do
     {:ok, _, _} = Index.create(second)
     {:ok, _, _} = Index.replace_alias(@index, index: second)
 
-    :ok = Index.remove_indicies(@index, except: [second])
+    assert {:ok, _, _} = Index.remove_indicies(@index, except: [second])
 
     assert Index.exists?(@index)
     assert Index.exists?(second)

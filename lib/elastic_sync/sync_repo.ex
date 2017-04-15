@@ -83,13 +83,13 @@ defmodule ElasticSync.SyncRepo do
     schema
     |> Schema.get_index()
     |> Index.transition(fn alias_name ->
-      ecto.transaction fn ->
+      normalize ecto.transaction(fn ->
         schema
         |> ecto.stream(max_rows: 500)
         |> Stream.chunk(500)
         |> Stream.each(&search.bulk_index(schema, &1, index: alias_name))
         |> Stream.run()
-      end
+      end)
     end)
   end
   def reindex(mod, schema) do
@@ -97,6 +97,9 @@ defmodule ElasticSync.SyncRepo do
     |> get_repos()
     |> reindex(schema)
   end
+
+  defp normalize({:ok, :ok}), do: :ok
+  defp normalize(other), do: other
 
   defp sync_one({ecto, search}, action, args) do
     with {:ok, record} <- apply(ecto, action, args),

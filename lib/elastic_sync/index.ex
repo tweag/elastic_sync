@@ -6,6 +6,10 @@ defmodule ElasticSync.Index do
     HTTP.put("/#{name}")
   end
 
+  def remove(names) when is_list(names) do
+    HTTP.delete("/#{Enum.join(names, ",")}")
+  end
+
   def remove(name) do
     HTTP.delete("/#{name}")
   end
@@ -36,7 +40,7 @@ defmodule ElasticSync.Index do
   """
   def transition(name, alias_name, fun) do
     with {:ok, _, _} <- create(alias_name),
-         {:ok, :ok}  <- fun.(alias_name),
+         :ok  <- fun.(alias_name),
          {:ok, _, _} <- refresh(alias_name),
          {:ok, _, _} <- replace_alias(name, index: alias_name),
          {:ok, _, _} <- remove_indicies(name, except: [alias_name]),
@@ -76,7 +80,12 @@ defmodule ElasticSync.Index do
     |> get_aliases()
     |> Enum.filter(&Regex.match?(re, &1))
     |> Enum.filter(&(not &1 in except))
-    |> Enum.each(&HTTP.delete("/#{&1}"))
+    |> case do
+         [] ->
+           {:ok, 200, %{acknowledged: true}}
+         names ->
+           remove(names)
+       end
   end
 
   defp get_aliases(name) do
