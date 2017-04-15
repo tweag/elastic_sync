@@ -18,19 +18,19 @@ This project is not currently available on Hex, so for now, you'll have to load 
 
   1. Add `elastic_sync` to your list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [{:elastic_sync, github: "promptworks/elastic_sync"}]
-    end
-    ```
+```elixir
+def deps do
+  [{:elastic_sync, github: "promptworks/elastic_sync"}]
+end
+```
 
   2. Ensure `elastic_sync` is started before your application:
 
-    ```elixir
-    def application do
-      [applications: [:elastic_sync]]
-    end
-    ```
+```elixir
+def application do
+  [applications: [:elastic_sync]]
+end
+```
 
 ## Usage
 
