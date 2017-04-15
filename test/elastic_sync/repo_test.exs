@@ -1,7 +1,7 @@
 defmodule ElasticSync.RepoTest do
   use ExUnit.Case
-  import Tirexs.HTTP
 
+  alias Tirexs.HTTP
   alias ElasticSync.Repo
 
   doctest ElasticSync.Repo
@@ -16,12 +16,12 @@ defmodule ElasticSync.RepoTest do
   end
 
   defp find(id) do
-    get("/elastic_sync_test/things/#{id}")
+    HTTP.get("/elastic_sync_test/things/#{id}")
   end
 
   setup do
-    delete("/elastic_sync_test")
-    put("/elastic_sync_test")
+    HTTP.delete("/*")
+    HTTP.put("/elastic_sync_test")
     :ok
   end
 
@@ -84,7 +84,7 @@ defmodule ElasticSync.RepoTest do
       %Thing{id: 3, name: "sausage"},
     ]
 
-    {:ok, 200, %{hits: %{hits: hits}}} = get("/elastic_sync_test/things/_search")
+    {:ok, 200, %{hits: %{hits: hits}}} = HTTP.get("/elastic_sync_test/things/_search")
     assert length(hits) == 3
   end
 
@@ -129,20 +129,5 @@ defmodule ElasticSync.RepoTest do
 
     {:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Thing, query)
     assert length(hits) == 1
-  end
-
-  test "get_alias/1" do
-    assert Regex.match?(~r"foobar-\d{10}", Repo.get_alias("foobar"))
-  end
-
-  test "index creation and deletion" do
-    name = "elastic_sync_test2"
-
-    assert {:error, 404, _} = get("/#{name}")
-    Repo.create_index(name)
-    assert {:ok, 200, _} = get("/#{name}")
-
-    Repo.remove_index(name)
-    assert {:error, 404, _} = get("/#{name}")
   end
 end

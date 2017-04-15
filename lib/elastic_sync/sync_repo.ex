@@ -1,5 +1,5 @@
 defmodule ElasticSync.SyncRepo do
-  alias ElasticSync.{Schema, Repo}
+  alias ElasticSync.{Schema, Index}
 
   defmacro __using__(opts) do
     ecto = Keyword.fetch!(opts, :ecto)
@@ -80,29 +80,22 @@ defmodule ElasticSync.SyncRepo do
   end
 
   def reindex({ecto, search}, schema) do
-    index_name = Schema.get_index(schema)
-    alias_name = Repo.get_alias(index_name)
-
-    with {:ok, _, _} <- search.create_index(alias_name),
-         {:ok, :ok}  <- bulk_index({ecto, search}, schema, index: alias_name),
-         {:ok, _, _} <- search.refresh(schema, index: alias_name),
-         {:ok, _, _} <- search.swap_alias(index_name, alias_name),
-         do: :ok
+    schema
+    |> Schema.get_index()
+    |> Index.transition(fn alias_name ->
+      ecto.transaction fn ->
+        schema
+        |> ecto.stream(max_rows: 500)
+        |> Stream.chunk(500)
+        |> Stream.each(&search.bulk_index(schema, &1, index: alias_name))
+        |> Stream.run()
+      end
+    end)
   end
   def reindex(mod, schema) do
     mod
     |> get_repos()
     |> reindex(schema)
-  end
-
-  defp bulk_index({ecto, search}, schema, opts) do
-    ecto.transaction fn ->
-      schema
-      |> ecto.stream(max_rows: 500)
-      |> Stream.chunk(500)
-      |> Stream.each(&search.bulk_index(schema, &1, opts))
-      |> Stream.run()
-    end
   end
 
   defp sync_one({ecto, search}, action, args) do
