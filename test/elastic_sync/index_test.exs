@@ -12,7 +12,10 @@ defmodule ElasticSync.IndexTest do
   end
 
   test "get_alias/1" do
-    assert Regex.match?(~r"#{@index}-\d{10}", Index.get_new_alias_name(@index))
+    re   = ~r/^#{@index}-\d{13}$/
+    name = Index.get_new_alias_name(@index)
+
+    assert Regex.match?(re, name)
   end
 
   test "create/1" do
@@ -27,13 +30,19 @@ defmodule ElasticSync.IndexTest do
     assert {:ok, _, _} = HTTP.get("/#{@index}")
   end
 
-  test "clean_aliases/1" do
-    {:ok, _, _} = Index.create("foo")
-    {:ok, _, _} = Index.replace_alias(@index, index: "foo")
+  test "remove_indicies/1" do
+    first = Index.get_new_alias_name(@index)
+    {:ok, _, _} = Index.create(first)
+    {:ok, _, _} = Index.replace_alias(@index, index: first)
 
-    {:ok, _, _} = Index.create("bar")
-    {:ok, _, _} = Index.replace_alias(@index, index: "bar")
+    second = Index.get_new_alias_name(@index)
+    {:ok, _, _} = Index.create(second)
+    {:ok, _, _} = Index.replace_alias(@index, index: second)
 
-    # HTTP.get("/_")
+    :ok = Index.remove_indicies(@index, except: [second])
+
+    assert Index.exists?(@index)
+    assert Index.exists?(second)
+    refute Index.exists?(first)
   end
 end

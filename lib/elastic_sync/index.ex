@@ -10,6 +10,13 @@ defmodule ElasticSync.Index do
     HTTP.delete("/#{name}")
   end
 
+  def exists?(name) do
+    case HTTP.get("/#{name}") do
+      {:ok, _, _} -> true
+      {:error, _, _} -> false
+    end
+  end
+
   def refresh(name) do
     HTTP.post("/#{name}/_refresh")
   end
@@ -32,7 +39,7 @@ defmodule ElasticSync.Index do
          {:ok, :ok}  <- fun.(alias_name),
          {:ok, _, _} <- refresh(alias_name),
          {:ok, _, _} <- replace_alias(name, index: alias_name),
-         {:ok, _, _} <- remove_stale_indicies(name),
+         {:ok, _, _} <- remove_indicies(name, except: [alias_name]),
          do: :ok
   end
 
@@ -45,20 +52,12 @@ defmodule ElasticSync.Index do
 
     remove =
       name
-      |> get_index_names_for_alias()
+      |> get_aliases()
       |> Enum.map(fn a ->
         %{remove: %{alias: name, index: a}}
       end)
 
     HTTP.post("/_aliases", %{actions: remove ++ [add]})
-  end
-
-  @doc """
-  Delete all the indicies for the given alias name
-  that aren't currently aliases of the name.
-  """
-  def clean_indicies(_name) do
-    raise "Not implemented"
   end
 
   @doc """
@@ -70,10 +69,22 @@ defmodule ElasticSync.Index do
     name <> "-" <> to_string(ms)
   end
 
-  defp get_index_names_for_alias(name) do
+  def remove_indicies(name, except: except) do
+    re = ~r/^#{name}-\d{13}$/
+
+    name
+    |> get_aliases()
+    |> Enum.filter(&Regex.match?(re, &1))
+    |> Enum.filter(&(not &1 in except))
+    |> Enum.each(&HTTP.delete("/#{&1}"))
+  end
+
+  defp get_aliases(name) do
     case HTTP.get("/_aliases/#{name}") do
       {:ok, 200, aliases} ->
-        Map.keys(aliases)
+        aliases
+        |> Map.keys()
+        |> Enum.map(&to_string/1)
       {:error, _, _} ->
         []
     end
