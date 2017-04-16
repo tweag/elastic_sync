@@ -4,6 +4,7 @@ defmodule ElasticSync.Repo do
 
   alias ElasticSync.Index
   alias Tirexs.HTTP
+  alias Tirexs.Resources.APIs, as: API
 
   def search(queryable, query, opts \\ [])
   def search(queryable, query, opts) when is_binary(query) do
@@ -27,37 +28,37 @@ defmodule ElasticSync.Repo do
 
   def insert(record, opts \\ []) do
     record.__struct__
-    |> to_collection_url(opts)
+    |> to_index_url(opts)
     |> HTTP.post(%{id: record.id}, to_document(record))
   end
 
   def insert!(record, opts \\ []) do
     record.__struct__
-    |> to_collection_url(opts)
+    |> to_index_url(opts)
     |> HTTP.post!(%{id: record.id}, to_document(record))
   end
 
   def update(record, opts \\ []) do
     record
-    |> to_resource_url(opts)
+    |> to_document_url(opts)
     |> HTTP.put(to_document(record))
   end
 
   def update!(record, opts \\ []) do
     record
-    |> to_resource_url(opts)
+    |> to_document_url(opts)
     |> HTTP.put!(to_document(record))
   end
 
   def delete(record, opts \\ []) do
     record
-    |> to_resource_url(opts)
+    |> to_document_url(opts)
     |> HTTP.delete!
   end
 
   def delete!(record, opts \\ []) do
     record
-    |> to_resource_url(opts)
+    |> to_document_url(opts)
     |> HTTP.delete!
   end
 
@@ -79,21 +80,25 @@ defmodule ElasticSync.Repo do
   end
 
   def to_search_url(queryable, opts \\ []) do
-    to_collection_url(queryable, opts) <> "/_search"
+    url_for(:_search, queryable, opts)
   end
 
-  def to_collection_url(queryable, opts \\ []) do
-    index = get_index(queryable, opts)
-    type = get_type(queryable, opts)
-    "/#{index}/#{type}"
+  def to_index_url(queryable, opts \\ []) do
+    url_for(:index, queryable, opts)
   end
 
-  def to_resource_url(record, opts \\ []) do
-    "#{to_collection_url(record.__struct__, opts)}/#{record.id}"
+  def to_document_url(record, opts \\ []) do
+    url_for(:doc, record.__struct__, opts, [record.id])
   end
 
   def to_document(record) do
     record.__struct__.to_search_document(record)
+  end
+
+  defp url_for(fun_name, queryable, opts, paths \\ []) do
+    index = get_index(queryable, opts)
+    type  = get_type(queryable, opts)
+    apply(API, fun_name, [index, type] ++ paths)
   end
 
   # Tirexs only accepts a list for bulk
