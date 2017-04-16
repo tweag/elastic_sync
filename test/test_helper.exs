@@ -1,5 +1,3 @@
-# Mix.Tasks.Ecto.Drop.run(["--quiet"])
-# Mix.Tasks.Ecto.Create.run(["--quiet"])
 Mix.Task.run "ecto.drop", ["--quiet", "-r", "ElasticSync.TestRepo"]
 Mix.Task.run "ecto.create", ["--quiet", "-r", "ElasticSync.TestRepo"]
 Mix.Task.run "ecto.migrate", ["-r", "ElasticSync.TestRepo"]
