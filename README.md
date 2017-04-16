@@ -39,12 +39,12 @@ end
 Like Ecto, ElasticSync has a concept of a schema and a repo. Here's how you'd configure your schema:
 
 ```elixir
-defmodule MyApp.SomeModel do
+defmodule MyApp.Food do
   defstruct [:id, :name]
 
   use ElasticSync.Schema,
-    index: "some_model",
-    type: "some_model"
+    index: "foods",
+    type: "foods"
 
   @doc """
   Convert a struct to a plain ol' map. This will become our document.
@@ -55,21 +55,53 @@ defmodule MyApp.SomeModel do
 end
 ```
 
-Great. Now, you communicate with ElasticSearch.
+Great. Now, you can insert/update/delete some data.
 
 ```elixir
-alias MyApp.SomeModel
+alias MyApp.Food
 alias ElasticSync.Repo
 
-{:ok, 201, _response} = Repo.insert(%SomeModel{id: 1})
-{:ok, 200, _response} = Repo.update(%SomeModel{id: 1, name: "meatloaf"})
-{:ok, 200, _response} = Repo.delete(%SomeModel{id: 1})
+{:ok, 201, _response} = Repo.insert(%Food{id: 1})
+{:ok, 200, _response} = Repo.update(%Food{id: 1, name: "meatloaf"})
+{:ok, 200, _response} = Repo.delete(%Food{id: 1})
 
-{:ok, 200, _response} = Repo.insert_all(SomeModel, [
-  %SomeModel{id: 1, name: "cheesecake"},
-  %SomeModel{id: 2, name: "applesauce"},
-  %SomeModel{id: 3, name: "sausage"}
+{:ok, 200, _response} = Repo.insert_all(Food, [
+  %Food{id: 1, name: "cheesecake"},
+  %Food{id: 2, name: "applesauce"},
+  %Food{id: 3, name: "sausage"}
 ])
+```
+
+And, you can search it:
+
+```elixir
+# Search with strings:
+
+{:ok, 200, %{hits: %{hits: hits}}} = Repo.search(SomeModel, "meatloaf")
+
+# Search using the elasticsearch DSL:
+
+query = %{
+  query: %{bool: %{must: [%{match: %{name: "meatloaf"}}]}}
+}
+
+{:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Food, query)
+
+# Or, use the macro provided by Tirexs:
+
+import Tirexs.Search
+
+query = search do
+  query do
+    bool do
+      must do
+        match "name", "meatloaf"
+      end
+    end
+  end
+end
+
+{:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Food, query)
 ```
 
 ### ElasicSync.SyncRepo
@@ -84,9 +116,11 @@ end
 
 Now, anytime you make a change to one of your models, just use the `SyncRepo` instead of your app's `Repo`.
 
-The `SyncRepo` will only push those changes to ElasticSearch if the save operation was successful. However, you might want to handle the possibility that HTTP request failed. For example:
+The `SyncRepo` will only push those changes to ElasticSearch if the save operation is successful. However, you might want to handle the scenario where an HTTP request fails. For example:
 
 ```elixir
+changeset = Foo.changeset(%Food{id: 1}, %{"name" => "poison"})
+
 case SyncRepo.insert(changeset) do
   {:ok, record} ->
     # everything was successful!
@@ -105,6 +139,21 @@ Now, to reindex your models, you can simply run:
 $ mix elastic_sync.reindex MyApp.SyncRepo MyApp.SomeModel
 ```
 
-### More Configuration
+### Configuring the Elasticsearch endpoint
 
-`ElasticSync` is build on top of [`Tirexs`](https://github.com/Zatvobor/tirexs). So, if you need further configuration, you might want to check there.
+ElasticSync is build on top of [Tirexs](https://github.com/Zatvobor/tirexs), which offers two ways to customize the Elasticsearch endpoint:
+
+1. By setting the `ES_URI` environment variable.
+2. Using `Mix.Config`:
+
+```elixir
+config :tirexs, :uri, "http://your-endpoint.com:9200"
+```
+
+### TODO
+
++ [ ] Create indexes with a default analyzer.
++ [ ] Allow developers to customize mappings (#5).
++ [ ] Use Tirexs for URL generation.
++ [ ] Properly escape index names.
++ [ ] Better output for the mix task.
