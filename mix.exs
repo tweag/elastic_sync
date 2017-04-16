@@ -8,6 +8,8 @@ defmodule ElasticSync.Mixfile do
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     preferred_cli_env: preferred_cli_env(),
+     test_coverage: [tool: ExCoveralls],
      deps: deps()]
   end
 
@@ -31,7 +33,15 @@ defmodule ElasticSync.Mixfile do
     [{:tirexs, "~> 0.8"},
      {:ecto, "~> 2.1", optional: true},
      {:ecto, "~> 2.1", only: [:dev, :test]},
-     {:postgrex, ">= 0.0.0", only: [:test]}]
+     {:postgrex, ">= 0.0.0", only: :test},
+     {:excoveralls, "~> 0.6", only: :test}]
+  end
+
+  defp preferred_cli_env do
+    ["coveralls": :test,
+     "coveralls.detail": :test,
+     "coveralls.post": :test,
+     "coveralls.html": :test]
   end
 
   defp elixirc_paths(:test), do: elixirc_paths() ++ ["test/dummy.exs"]
