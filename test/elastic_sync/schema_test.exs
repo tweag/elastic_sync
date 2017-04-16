@@ -1,5 +1,6 @@
 defmodule ElasticSync.SchemaTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
+
   alias ElasticSync.Schema
 
   defmodule Simple do

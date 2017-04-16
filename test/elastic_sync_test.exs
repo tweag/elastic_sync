@@ -1,4 +1,4 @@
 defmodule ElasticSyncTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
   doctest ElasticSync
 end

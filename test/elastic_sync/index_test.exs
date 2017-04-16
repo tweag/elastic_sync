@@ -1,5 +1,5 @@
 defmodule ElasticSync.IndexTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   alias Tirexs.HTTP
   alias ElasticSync.Index
@@ -7,7 +7,7 @@ defmodule ElasticSync.IndexTest do
   @index "elastic_sync_index_test"
 
   setup do
-    HTTP.delete!("/*")
+    HTTP.delete!("*")
     :ok
   end
 

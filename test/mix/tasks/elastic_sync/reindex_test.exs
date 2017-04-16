@@ -1,12 +1,13 @@
 defmodule Mix.Tasks.ElasticSync.ReindexTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
+
   import Tirexs.HTTP
 
   alias Mix.Tasks.ElasticSync.Reindex
   alias ElasticSync.{TestRepo, Thing}
 
   setup do
-    Tirexs.HTTP.delete!("/*")
+    Tirexs.HTTP.delete!("*")
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(ElasticSync.TestRepo)
   end
 
@@ -17,6 +18,6 @@ defmodule Mix.Tasks.ElasticSync.ReindexTest do
 
     Reindex.run(["ElasticSync.TestSyncRepo", "ElasticSync.Thing"])
 
-    {:ok, _, _} = get("/elastic_sync_test/_search")
+    assert {:ok, _, _} = get("/elastic_sync_test/_search")
   end
 end

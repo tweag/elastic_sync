@@ -1,5 +1,5 @@
 defmodule ElasticSync.RepoTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   alias Tirexs.HTTP
   alias ElasticSync.Repo
@@ -20,8 +20,8 @@ defmodule ElasticSync.RepoTest do
   end
 
   setup do
-    HTTP.delete!("/*")
-    HTTP.put!("/elastic_sync_test")
+    HTTP.delete!("*")
+    HTTP.put!("elastic_sync_test")
     :ok
   end
 
