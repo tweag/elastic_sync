@@ -64,7 +64,7 @@ defmodule ElasticSync.Index do
         %{remove: %{alias: name, index: a}}
       end)
 
-    API._aliases
+    API._aliases()
     |> HTTP.post(%{actions: remove ++ [add]})
   end
 
@@ -78,11 +78,8 @@ defmodule ElasticSync.Index do
   end
 
   def remove_indicies(name, except: except) do
-    re = ~r/^#{name}-\d{13}$/
-
     name
     |> get_aliases()
-    |> Enum.filter(&Regex.match?(re, &1))
     |> Enum.filter(&(not &1 in except))
     |> case do
          [] ->
@@ -93,16 +90,18 @@ defmodule ElasticSync.Index do
   end
 
   defp get_aliases(name) do
-    "*"
-    |> API._aliases(name)
-    |> HTTP.get
-    |> case do
-         {:ok, 200, aliases} ->
-           aliases
-           |> Map.keys()
-           |> Enum.map(&to_string/1)
-         {:error, _, _} ->
-           []
-       end
+    re = ~r/^#{name}-\d{13}$/
+
+    API._aliases()
+    |> HTTP.get()
+    |> normalize_aliases()
+    |> Enum.filter(&Regex.match?(re, &1))
+  end
+
+  defp normalize_aliases({:error, _, _}), do: []
+  defp normalize_aliases({:ok, 200, aliases}) do
+    aliases
+    |> Map.keys()
+    |> Enum.map(&to_string/1)
   end
 end

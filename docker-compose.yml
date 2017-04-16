@@ -18,6 +18,7 @@ services:
   app:
     build: .
     entrypoint: /app/docker-entrypoint.sh
+    command: mix test
     depends_on:
       - elasticsearch
       - postgres
