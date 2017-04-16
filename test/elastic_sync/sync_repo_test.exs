@@ -5,8 +5,8 @@ defmodule ElasticSync.SyncRepoTest do
   alias ElasticSync.{Thing, TestSyncRepo}
 
   setup do
-    Tirexs.HTTP.delete("/elastic_sync_test")
-    Tirexs.HTTP.put("/elastic_sync_test")
+    Tirexs.HTTP.delete!("/elastic_sync_test")
+    Tirexs.HTTP.put!("/elastic_sync_test")
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(ElasticSync.TestRepo)
   end
 

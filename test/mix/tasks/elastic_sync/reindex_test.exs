@@ -6,7 +6,7 @@ defmodule Mix.Tasks.ElasticSync.ReindexTest do
   alias ElasticSync.{TestRepo, Thing}
 
   setup do
-    Tirexs.HTTP.delete("/elastic_sync_test")
+    Tirexs.HTTP.delete!("/*")
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(ElasticSync.TestRepo)
   end
 

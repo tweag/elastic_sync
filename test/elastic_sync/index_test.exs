@@ -7,7 +7,7 @@ defmodule ElasticSync.IndexTest do
   @index "elastic_sync_index_test"
 
   setup do
-    {:ok, _, _} = HTTP.delete("/*")
+    HTTP.delete!("/*")
     :ok
   end
 
