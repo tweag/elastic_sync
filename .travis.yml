@@ -1,28 +1,26 @@
+sudo: required
+
 before_install:
   - sudo apt-get update
-  - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
-  # As of the writing of this script Travis has docker-compose v1.4.2, we need
-  # to update it to 1.8+. $DOCKER_COMPOSE_VERSION is provide from the `env`
-  # above.
+
+  # Install a newer docker
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
+
+  # Install a newer docker-compose
   - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/1.12.0/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-
-  - docker-compose --version
-
-  - docker-compose pull
-  - docker-compose build
 
 env:
   global:
     - MIX_ENV=test
     - COVERALLS_REPO_TOKEN=h4YjU7aDUREpveoU6oHUS9SUwwxAY7eGC
-    - DOCKER_COMPOSE_VERSION=1.8.0
 
   matrix:
     - ES_VERSION=1.7.6
     - ES_VERSION=2.4.3
     - ES_VERSION=5.3.0
 
+install: docker-compose build
 script: docker-compose run app mix coveralls.travis
