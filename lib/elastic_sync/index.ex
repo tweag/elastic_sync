@@ -1,28 +1,31 @@
 defmodule ElasticSync.Index do
   alias Tirexs.HTTP
+  alias Tirexs.Resources.APIs, as: API
 
   # TODO: Allow developers to control mappings here
-  def create(name) do
-    HTTP.put("/#{name}")
+  def create(names) do
+    names
+    |> API.index
+    |> HTTP.put
   end
 
-  def remove(names) when is_list(names) do
-    HTTP.delete("/#{Enum.join(names, ",")}")
-  end
-
-  def remove(name) do
-    HTTP.delete("/#{name}")
+  def remove(names) do
+    names
+    |> API.index
+    |> HTTP.delete
   end
 
   def exists?(name) do
-    case HTTP.get("/#{name}") do
+    case name |> API.index |> HTTP.get do
       {:ok, _, _} -> true
       {:error, _, _} -> false
     end
   end
 
   def refresh(name) do
-    HTTP.post("/#{name}/_refresh")
+    name
+    |> API._refresh
+    |> HTTP.post
   end
 
   def transition(name, fun) do
@@ -61,7 +64,8 @@ defmodule ElasticSync.Index do
         %{remove: %{alias: name, index: a}}
       end)
 
-    HTTP.post("/_aliases", %{actions: remove ++ [add]})
+    API._aliases
+    |> HTTP.post(%{actions: remove ++ [add]})
   end
 
   @doc """
@@ -89,13 +93,16 @@ defmodule ElasticSync.Index do
   end
 
   defp get_aliases(name) do
-    case HTTP.get("/_aliases/#{name}") do
-      {:ok, 200, aliases} ->
-        aliases
-        |> Map.keys()
-        |> Enum.map(&to_string/1)
-      {:error, _, _} ->
-        []
-    end
+    "*"
+    |> API._aliases(name)
+    |> HTTP.get
+    |> case do
+         {:ok, 200, aliases} ->
+           aliases
+           |> Map.keys()
+           |> Enum.map(&to_string/1)
+         {:error, _, _} ->
+           []
+       end
   end
 end
