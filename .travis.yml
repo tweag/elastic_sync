@@ -12,9 +12,13 @@ before_install:
   - sudo service elasticsearch restart
 
 env:
+  global:
+    - MIX_ENV=test
+    - COVERALLS_REPO_TOKEN=h4YjU7aDUREpveoU6oHUS9SUwwxAY7eGC
+
   matrix:
     - ES_DL_URL=https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.6.deb
     - ES_DL_URL=https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.4.3/elasticsearch-2.4.3.deb
     - ES_DL_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.0.deb
 
-script: MIX_ENV=test mix coveralls.travis
+script: mix coveralls.travis
