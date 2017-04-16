@@ -1,8 +1,8 @@
-version: '2'
+version: '2.1'
 
 services:
   elasticsearch:
-    image: elasticsearch:alpine
+    image: elasticsearch:${ES_VERSION:-5.3.0}-alpine
     ports:
       - '9200'
     volumes:
@@ -28,6 +28,7 @@ services:
       - _build:/app/_build
     environment:
       - MIX_ENV
+      - COVERALLS_REPO_TOKEN
       - POSTGRES_HOST=postgres
       - ES_URI=http://elasticsearch:9200
 

@@ -1,24 +1,28 @@
-language: elixir
-
-elixir:
-  - 1.4.0
-
-otp_release:
-  - 19.2
-
 before_install:
-  - curl -o elasticsearch.deb "$ES_DL_URL"
-  - sudo dpkg -i --force-confnew elasticsearch.deb
-  - sudo service elasticsearch restart
+  - sudo apt-get update
+  - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
+  # As of the writing of this script Travis has docker-compose v1.4.2, we need
+  # to update it to 1.8+. $DOCKER_COMPOSE_VERSION is provide from the `env`
+  # above.
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+  - docker-compose --version
+
+  - docker-compose pull
+  - docker-compose build
 
 env:
   global:
     - MIX_ENV=test
     - COVERALLS_REPO_TOKEN=h4YjU7aDUREpveoU6oHUS9SUwwxAY7eGC
+    - DOCKER_COMPOSE_VERSION=1.8.0
 
   matrix:
-    - ES_DL_URL=https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.6.deb
-    - ES_DL_URL=https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.4.3/elasticsearch-2.4.3.deb
-    - ES_DL_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.3.0.deb
+    - ES_VERSION=1.7.6
+    - ES_VERSION=2.4.3
+    - ES_VERSION=5.3.0
 
-script: mix coveralls.travis
+script: docker-compose run app mix coveralls.travis
