@@ -1,13 +1,11 @@
 defmodule ElasticSync.SyncRepo do
-  alias ElasticSync.{Schema, Index}
+  alias ElasticSync.{Repo, Schema, Index}
 
   defmacro __using__(opts) do
     ecto = Keyword.fetch!(opts, :ecto)
-    search = Keyword.get(opts, :search, ElasticSync.Repo)
 
     quote do
       def __elastic_sync__(:ecto), do: unquote(ecto)
-      def __elastic_sync__(:search), do: unquote(search)
 
       def insert(struct_or_changeset, opts \\ []) do
         ElasticSync.SyncRepo.insert(__MODULE__, struct_or_changeset, opts)
@@ -67,19 +65,17 @@ defmodule ElasticSync.SyncRepo do
     sync_one!(mod, :delete!, [struct_or_changeset, opts])
   end
 
-  def insert_all(mod, schema_or_source, entries, opts \\ [])
-  def insert_all({ecto, search}, schema_or_source, entries, opts) do
+  def insert_all(mod, schema_or_source, entries, opts \\ []) do
+    ecto = mod.__elastic_sync__(:ecto)
+
     with {:ok, records} <- ecto.insert_all(schema_or_source, entries, opts),
-         {:ok, _, _} <- search.insert_all(schema_or_source, records),
+         {:ok, _, _} <- Repo.insert_all(schema_or_source, records),
          do: {:ok, records}
   end
-  def insert_all(mod, schema_or_source, entries, opts) do
-    mod
-    |> get_repos()
-    |> insert_all(schema_or_source, entries, opts)
-  end
 
-  def reindex({ecto, search}, schema) do
+  def reindex(mod, schema) do
+    ecto = mod.__elastic_sync__(:ecto)
+
     schema
     |> Schema.get_index()
     |> Index.transition(fn alias_name ->
@@ -87,43 +83,27 @@ defmodule ElasticSync.SyncRepo do
         schema
         |> ecto.stream(max_rows: 500)
         |> Stream.chunk(500)
-        |> Stream.each(&search.bulk_index(schema, &1, index: alias_name))
+        |> Stream.each(&Repo.bulk_index(schema, &1, index: alias_name))
         |> Stream.run()
       end)
     end)
-  end
-  def reindex(mod, schema) do
-    mod
-    |> get_repos()
-    |> reindex(schema)
   end
 
   defp normalize({:ok, :ok}), do: :ok
   defp normalize(other), do: other
 
-  defp sync_one({ecto, search}, action, args) do
+  defp sync_one(mod, action, args) do
+    ecto = mod.__elastic_sync__(:ecto)
+
     with {:ok, record} <- apply(ecto, action, args),
-         {:ok, _, _} <- apply(search, action, [record]),
+         {:ok, _, _} <- apply(Repo, action, [record]),
          do: {:ok, record}
   end
-  defp sync_one(mod, action, args) do
-    mod
-    |> get_repos()
-    |> sync_one(action, args)
-  end
 
-  defp sync_one!({ecto, search}, action, args) do
-    result = apply(ecto, action, args)
-    apply(search, action, [result])
-    result
-  end
   defp sync_one!(mod, action, args) do
-    mod
-    |> get_repos()
-    |> sync_one!(action, args)
-  end
-
-  defp get_repos(mod) do
-    {mod.__elastic_sync__(:ecto), mod.__elastic_sync__(:search)}
+    ecto = mod.__elastic_sync__(:ecto)
+    result = apply(ecto, action, args)
+    apply(Repo, action, [result])
+    result
   end
 end
