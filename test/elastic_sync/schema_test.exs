@@ -1,47 +1,32 @@
 defmodule ElasticSync.SchemaTest do
   use ExUnit.Case
-  doctest ElasticSync.Schema
   alias ElasticSync.Schema
 
   defmodule Simple do
-    defstruct id: 1, name: "simple"
-    use ElasticSync.Schema, index: "elastic_sync_test", type: "simple"
+    defstruct id: 1
+    use ElasticSync.Schema, index: "foo"
   end
 
-  test "__elastic_sync__(:name)" do
-    assert Simple.__elastic_sync__(:index) == "elastic_sync_test"
+  defmodule WithType do
+    defstruct id: 1
+    use ElasticSync.Schema, index: "foo", type: "bar"
   end
 
-  test "__elastic_sync__(:type)" do
-    assert Simple.__elastic_sync__(:type) == "simple"
+  test "__elastic_sync__/1" do
+    expected = %ElasticSync.Schema{index: "foo", type: "foo"}
+    assert expected == Simple.__elastic_sync__
   end
 
-  test "get_config" do
-    assert Schema.get_config(Simple) == [
-      index: "elastic_sync_test",
-      type: "simple"
-    ]
+  test "__elastic_sync__/1 with type" do
+    expected = %ElasticSync.Schema{index: "foo", type: "bar"}
+    assert expected == WithType.__elastic_sync__
   end
 
-  test "get_config with overrides" do
-    assert Schema.get_config(Simple, index: "foo") == [type: "simple", index: "foo"]
-    assert Schema.get_config(Simple, type: "foo") == [index: "elastic_sync_test", type: "foo"]
-    assert Schema.get_config(Simple, index: "foo", type: "bar") == [index: "foo", type: "bar"]
-  end
+  test "get/2" do
+    assert Schema.get(Simple, :index) == "foo"
+    assert Schema.get(Simple, :type) == "foo"
 
-  test "get_index" do
-    assert Schema.get_index(Simple) == "elastic_sync_test"
-  end
-
-  test "get_index with override" do
-    assert Schema.get_index(Simple, index: "foo") == "foo"
-  end
-
-  test "get_type" do
-    assert Schema.get_type(Simple) == "simple"
-  end
-
-  test "get_type with override" do
-    assert Schema.get_type(Simple, type: "foo") == "foo"
+    assert Schema.get(WithType, :index) == "foo"
+    assert Schema.get(WithType, :type) == "bar"
   end
 end

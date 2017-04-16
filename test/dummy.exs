@@ -10,7 +10,7 @@ end
 defmodule ElasticSync.Thing do
   use Ecto.Schema
   import Ecto.Changeset
-  use ElasticSync.Schema, index: "elastic_sync_test", type: "things"
+  use ElasticSync.Schema, index: "elastic_sync_test"
 
   schema "things" do
     field :name, :string

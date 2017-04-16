@@ -1,34 +1,54 @@
 defmodule ElasticSync.Schema do
-  defmacro __using__([index: index, type: type]) do
+  defstruct [:index, :type]
+
+  defmacro __using__(opts) do
+    index  = Keyword.get(opts, :index)
+    type   = Keyword.get(opts, :type, index)
+
+    validate_index_name!(index)
+
     quote do
-      def __elastic_sync__(:index), do: unquote(index)
-      def __elastic_sync__(:type), do: unquote(type)
+      def __elastic_sync__ do
+        %ElasticSync.Schema{
+          index: unquote(index),
+          type: unquote(type)
+        }
+      end
     end
   end
 
-  defmacro __using__(_opts) do
-    raise ArgumentError, """
-    You must provide an index name and a type. For example:
+  def get(%__MODULE__{} = schema, key) do
+    Map.get(schema, key)
+  end
+  def get(schema, key) do
+    get(schema.__elastic_sync__, key)
+  end
 
-        use ElasticSync.Schema, index: "something", type: "blah"
+  def to_list(%__MODULE__{} = schema) do
+    schema
+    |> Map.delete(:__struct__)
+    |> Map.to_list()
+  end
+  def to_list(schema) do
+    to_list(schema.__elastic_sync__)
+  end
+
+  def merge(%__MODULE__{} = schema, opts) when is_map(opts) do
+    Map.merge(schema, opts)
+  end
+  def merge(schema, opts) when is_list(opts) do
+    merge(schema, Enum.into(opts, %{}))
+  end
+  def merge(schema, opts) do
+    merge(schema.__elastic_sync__, opts)
+  end
+
+  defp validate_index_name!(nil) do
+    raise ArgumentError, """
+    You must provide an index name. For example:
+
+    use ElasticSync.Schema, index: "foods"
     """
   end
-
-  def get_index(schema, opts \\ []) do
-    schema
-    |> get_config(opts)
-    |> Keyword.get(:index)
-  end
-
-  def get_type(schema, opts \\ []) do
-    schema
-    |> get_config(opts)
-    |> Keyword.get(:type)
-  end
-
-  def get_config(schema, opts \\ []) do
-    index = schema.__elastic_sync__(:index)
-    type = schema.__elastic_sync__(:type)
-    Keyword.merge([index: index, type: type], opts)
-  end
+  defp validate_index_name!(_), do: nil
 end
