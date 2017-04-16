@@ -154,6 +154,4 @@ config :tirexs, :uri, "http://your-endpoint.com:9200"
 
 + [ ] Create indexes with a default analyzer.
 + [ ] Allow developers to customize mappings (#5).
-+ [ ] Use Tirexs for URL generation.
-+ [ ] Properly escape index names.
 + [ ] Better output for the mix task.

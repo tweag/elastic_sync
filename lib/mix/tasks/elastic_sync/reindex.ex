@@ -30,17 +30,17 @@ defmodule Mix.Tasks.ElasticSync.Reindex do
   end
 
   defp parse_args([sync_repo_name, schema_name | _args]) do
-    with {:ok, schema} <- parse_elastic_sync(schema_name),
-         {:ok, sync_repo} <- parse_elastic_sync(sync_repo_name),
+    with {:ok, schema} <- parse_elastic_sync(schema_name, 0),
+         {:ok, sync_repo} <- parse_elastic_sync(sync_repo_name, 1),
          do: {:ok, schema, sync_repo}
   end
 
-  defp parse_elastic_sync(name) do
+  defp parse_elastic_sync(name, arity) do
     mod = Module.concat([name])
 
     case Code.ensure_compiled(mod) do
       {:module, _} ->
-        if function_exported?(mod, :__elastic_sync__, 1) do
+        if function_exported?(mod, :__elastic_sync__, arity) do
           {:ok, mod}
         else
           {:error, "Module #{inspect mod} isn't using elastic_sync."}

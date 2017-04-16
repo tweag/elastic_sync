@@ -1,0 +1,39 @@
+version: '2.1'
+
+services:
+  elasticsearch:
+    image: elasticsearch:${ES_VERSION:-5.3.0}-alpine
+    ports:
+      - '9200'
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+
+  postgres:
+    image: postgres:alpine
+    ports:
+      - '5432'
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  app:
+    build: .
+    entrypoint: /app/docker-entrypoint.sh
+    command: mix test
+    depends_on:
+      - elasticsearch
+      - postgres
+    volumes:
+      - .:/app
+      - deps:/app/deps
+      - _build:/app/_build
+    environment:
+      - MIX_ENV
+      - COVERALLS_REPO_TOKEN
+      - POSTGRES_HOST=postgres
+      - ES_URI=http://elasticsearch:9200
+
+volumes:
+  postgres: {}
+  elasticsearch: {}
+  deps: {}
+  _build: {}
