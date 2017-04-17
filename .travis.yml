@@ -19,7 +19,7 @@ env:
   matrix:
     - ES_VERSION=1.7.6
     - ES_VERSION=2.4.3
-    - ES_VERSION=5.3.0
+    - ES_VERSION=5.2.2
 
 install:
   - docker-compose build
