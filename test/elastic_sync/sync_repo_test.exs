@@ -37,6 +37,21 @@ defmodule ElasticSync.SyncRepoTest do
     assert {:error, _} = TestSyncRepo.update(changeset)
   end
 
+  test "update! with a changeset" do
+    thing = TestSyncRepo.insert!(%Thing{name: "meatloaf"})
+    changeset = Thing.changeset(thing, %{"name" => "pears"})
+    assert %Thing{name: "pears"} = TestSyncRepo.update!(changeset)
+  end
+
+  test "update! with an invalid changeset" do
+    thing = TestSyncRepo.insert!(%Thing{name: "meatloaf"})
+    changeset = Thing.changeset(thing, %{"name" => ""})
+
+    assert_raise Ecto.InvalidChangesetError, fn ->
+      TestSyncRepo.update!(changeset)
+    end
+  end
+
   test "delete" do
     thing = TestSyncRepo.insert!(%Thing{name: "meatloaf"})
     assert {:ok, _} = TestSyncRepo.delete(thing)
@@ -45,5 +60,10 @@ defmodule ElasticSync.SyncRepoTest do
   test "delete with a changeset" do
     thing = TestSyncRepo.insert!(%Thing{name: "meatloaf"})
     assert {:ok, _} = TestSyncRepo.delete(Thing.changeset(thing))
+  end
+
+  test "delete!" do
+    thing = TestSyncRepo.insert!(%Thing{name: "meatloaf"})
+    assert %Thing{name: "meatloaf"} = TestSyncRepo.delete!(thing)
   end
 end
