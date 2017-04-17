@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   elasticsearch:
-    image: elasticsearch:${ES_VERSION:-5.3.0}-alpine
+    image: elasticsearch:${ES_VERSION:-5.2.2}-alpine
     ports:
       - '9200'
     volumes:
