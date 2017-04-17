@@ -150,7 +150,25 @@ ElasticSync is build on top of [Tirexs](https://github.com/Zatvobor/tirexs), whi
 config :tirexs, :uri, "http://your-endpoint.com:9200"
 ```
 
-### TODO
+## Development
+
+The easiest way to run the tests locally is by using docker-compose.
+
+```
+$ git clone git@github.com:promptworks/elastic_sync
+$ cd elastic_sync
+$ docker-compose run app mix test
+```
+
+To run the tests against a specific elasticsearch version, you can use the `ES_VERSION` environment variable.
+
+```
+$ docker-compose stop
+$ export ES_VERSION=1.7.6
+$ docker-compose run app mix test
+```
+
+## TODO
 
 + [ ] Create indexes with a default analyzer.
 + [ ] Allow developers to customize mappings (#5).

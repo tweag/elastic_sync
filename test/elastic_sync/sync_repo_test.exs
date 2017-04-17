@@ -1,12 +1,13 @@
 defmodule ElasticSync.SyncRepoTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
+
   doctest ElasticSync.SyncRepo
 
   alias ElasticSync.{Thing, TestSyncRepo}
 
   setup do
-    Tirexs.HTTP.delete("/elastic_sync_test")
-    Tirexs.HTTP.put("/elastic_sync_test")
+    Tirexs.HTTP.delete!("*")
+    Tirexs.HTTP.put!("elastic_sync_test")
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(ElasticSync.TestRepo)
   end
 

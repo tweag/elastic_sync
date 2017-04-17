@@ -1,5 +1,5 @@
 defmodule ElasticSync.RepoTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   alias Tirexs.HTTP
   alias ElasticSync.Repo
@@ -20,8 +20,8 @@ defmodule ElasticSync.RepoTest do
   end
 
   setup do
-    HTTP.delete("/*")
-    HTTP.put("/elastic_sync_test")
+    HTTP.delete!("*")
+    HTTP.put!("elastic_sync_test")
     :ok
   end
 
@@ -42,7 +42,7 @@ defmodule ElasticSync.RepoTest do
   end
 
   test "insert/1" do
-    {:ok, 201, _} = Repo.insert(%Thing{id: 1})
+    assert {:ok, 201, _} = Repo.insert(%Thing{id: 1})
     assert {:ok, 200, _} = find(1)
   end
 
@@ -68,7 +68,7 @@ defmodule ElasticSync.RepoTest do
   test "delete/1" do
     Repo.insert!(%Thing{id: 1})
     assert {:ok, 200, _} = Repo.delete(%Thing{id: 1, name: "pasta"})
-    {:error, 404, _} = find(1)
+    assert {:error, 404, _} = find(1)
   end
 
   test "delete!/1" do
