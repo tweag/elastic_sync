@@ -38,6 +38,15 @@ defmodule ElasticSync.SchemaTest do
     end
   end
 
+  test "merge/2" do
+    expected = %Schema{index: "blah", type: "foo"}
+    assert Schema.merge(Simple, %{index: "blah"}) == expected
+    assert Schema.merge(Simple.__elastic_sync__, %{index: "blah"}) == expected
+
+    assert Schema.merge(Simple.__elastic_sync__, [index: "blah"]) == expected
+    assert Schema.merge(Simple.__elastic_sync__, [index: "blah"]) == expected
+  end
+
   test "to_list/1" do
     assert Schema.to_list(Simple) == @simple
     assert Schema.to_list(Simple.__elastic_sync__) == @simple
