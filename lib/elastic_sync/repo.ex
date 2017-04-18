@@ -54,14 +54,19 @@ defmodule ElasticSync.Repo do
   end
 
   def insert_all(schema, records) when is_list(records) do
-    with {:ok, 200, response} <- bulk_index(schema, records),
+    with {:ok, 200, response} <- load(schema.__elastic_sync__, records),
          {:ok, 200, _} <- Index.refresh(schema.__elastic_sync__),
          do: {:ok, 200, response}
   end
 
-  def bulk_index(schema, records) when is_list(records) do
-    data = Enum.map(records, &to_reindex_document/1)
-    Index.load(schema.__elastic_sync__, data)
+  @doc false
+  def load(index, records) do
+    data =
+      records
+      |> Enum.map(&to_document/1)
+      |> Enum.map(&to_reindex_document/1)
+
+    Index.load(index, data)
   end
 
   def to_search_url(schema) do
@@ -85,15 +90,10 @@ defmodule ElasticSync.Repo do
     record.__struct__.to_search_document(record)
   end
 
-  # Tirexs only accepts a list for bulk
-  defp to_reindex_document(record) do
-    document = to_document(record)
-
-    cond do
-      is_list(document) ->
-        document
-      true ->
-        Enum.into(document, [])
-    end
+  defp to_reindex_document(document) when is_list(document) do
+    document
+  end
+  defp to_reindex_document(document) do
+    Enum.into(document, [])
   end
 end
