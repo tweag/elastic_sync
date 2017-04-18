@@ -1,7 +1,7 @@
 defmodule ElasticSync.Repo do
   import Tirexs.Bulk
 
-  alias ElasticSync.{Schema, Index}
+  alias ElasticSync.Index
   alias Tirexs.HTTP
   alias Tirexs.Resources.APIs, as: API
 
@@ -63,9 +63,10 @@ defmodule ElasticSync.Repo do
 
   def insert_all(schema, records, opts \\ []) when is_list(records) do
     index_name =
-      schema
-      |> Schema.merge(opts)
-      |> Schema.get(:index)
+      schema.__elastic_sync__
+      |> Index.merge(opts)
+      |> Index.to_list
+      |> Keyword.get(:index)
 
     with {:ok, 200, response} <- bulk_index(schema, records, opts),
          {:ok, 200, _} <- Index.refresh(index_name),
@@ -76,8 +77,8 @@ defmodule ElasticSync.Repo do
     data = Enum.map(records, &to_reindex_document/1)
 
     payload =
-      schema
-      |> Schema.merge(opts)
+      schema.__elastic_sync__
+      |> Index.merge(opts)
       |> Map.take([:index, :type])
       |> Map.to_list()
       |> bulk(do: index(data))
@@ -102,10 +103,8 @@ defmodule ElasticSync.Repo do
   end
 
   defp url_for(fun_name, schema, opts, paths \\ []) do
-    schema = Schema.merge(schema, opts)
-    index  = Schema.get(schema, :index)
-    type   = Schema.get(schema, :type)
-    apply(API, fun_name, [index, type] ++ paths)
+    index = Index.merge(schema.__elastic_sync__, opts)
+    apply(API, fun_name, [index.name, index.type] ++ paths)
   end
 
   # Tirexs only accepts a list for bulk

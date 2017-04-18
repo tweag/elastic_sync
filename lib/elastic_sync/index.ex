@@ -2,34 +2,53 @@ defmodule ElasticSync.Index do
   alias Tirexs.HTTP
   alias Tirexs.Resources.APIs, as: API
 
-  # TODO: Allow developers to control mappings here
-  def create(names, config \\ []) do
-    names
+  defstruct [:name, :type, :alias]
+
+  def merge(%__MODULE__{} = index, opts) when is_list(opts) do
+    merge(index, Enum.into(opts, %{}))
+  end
+  def merge(%__MODULE__{} = index, %{index: name} = opts) do
+    opts =
+      opts
+      |> Map.delete(:index)
+      |> Map.put(:name, name)
+
+    merge(index, opts)
+  end
+  def merge(%__MODULE__{} = index, opts) do
+    Map.merge(index, opts)
+  end
+
+  def to_list(%__MODULE__{name: name, type: type}) do
+    [index: name, type: type]
+  end
+
+  def put_alias(%__MODULE__{name: name} = index) do
+    next_name = get_new_index_name(name)
+    %__MODULE__{index | name: next_name, alias: name}
+  end
+
+  def create(%__MODULE__{name: name, config: config}) do
+    name
     |> API.index
     |> HTTP.put(config)
   end
 
-  def remove(names) do
-    names
-    |> API.index
-    |> HTTP.delete
+  def remove(%__MODULE__{name: name}) do
+    do_remove(name)
   end
 
-  def exists?(name) do
+  def exists?(%__MODULE__{name: name}) do
     case name |> API.index |> HTTP.get do
       {:ok, _, _} -> true
       {:error, _, _} -> false
     end
   end
 
-  def refresh(name) do
+  def refresh(%__MODULE__{name: name}) do
     name
     |> API._refresh
     |> HTTP.post
-  end
-
-  def transition(name, config, fun) do
-    transition(name, get_new_alias_name(name), config, fun)
   end
 
   @doc """
@@ -41,12 +60,12 @@ defmodule ElasticSync.Index do
   4. Set the newly created index to the alias.
   5. Remove old indicies.
   """
-  def transition(name, alias_name, config, fun) do
-    with {:ok, _, _} <- create(alias_name, config),
-         :ok  <- fun.(alias_name),
-         {:ok, _, _} <- refresh(alias_name),
-         {:ok, _, _} <- replace_alias(name, index: alias_name),
-         {:ok, _, _} <- remove_indicies(name, except: [alias_name]),
+  def transition(%__MODULE__{} = index, fun) do
+    with {:ok, _, _} <- create(index),
+         :ok  <- fun.(index),
+         {:ok, _, _} <- refresh(index),
+         {:ok, _, _} <- replace_alias(index),
+         {:ok, _, _} <- remove_indicies(index),
          do: :ok
   end
 
@@ -54,48 +73,48 @@ defmodule ElasticSync.Index do
   Attach the alias name to the newly created index. Remove
   all old aliases.
   """
-  def replace_alias(name, index: index_name) do
-    add = %{add: %{alias: name, index: index_name}}
+  def replace_alias(%__MODULE__{name: name, alias: alias_name}) do
+    add = %{add: %{alias: alias_name, index: name}}
 
     remove =
       name
       |> get_aliases()
       |> Enum.map(fn a ->
-        %{remove: %{alias: name, index: a}}
+        %{remove: %{alias: alias_name, index: a}}
       end)
 
     API._aliases()
     |> HTTP.post(%{actions: remove ++ [add]})
   end
 
-  @doc """
-  Generate an index name ending with the current timestamp in
-  milliseconds from a name.
-  """
-  def get_new_alias_name(name) do
-    ms = :os.system_time(:milli_seconds)
-    name <> "-" <> to_string(ms)
-  end
-
-  def remove_indicies(name, except: except) do
-    name
+  def remove_indicies(%__MODULE__{name: name, alias: alias_name}) do
+    alias_name
     |> get_aliases()
-    |> Enum.filter(&(not &1 in except))
+    |> Enum.filter(&(&1 != name))
     |> case do
          [] ->
            {:ok, 200, %{acknowledged: true}}
          names ->
-           remove(names)
+           do_remove(names)
        end
   end
 
-  defp get_aliases(name) do
-    re = ~r/^#{name}-\d{13}$/
+  defp do_remove(names) do
+    names
+    |> API.index
+    |> HTTP.delete
+  end
 
-    API._aliases()
-    |> HTTP.get()
+  defp get_new_index_name(name) do
+    ms = :os.system_time(:milli_seconds)
+    name <> "-" <> to_string(ms)
+  end
+
+  defp get_aliases(name) do
+    API._aliases
+    |> HTTP.get
     |> normalize_aliases()
-    |> Enum.filter(&Regex.match?(re, &1))
+    |> Enum.filter(&Regex.match?(~r/^#{name}-\d{13}$/, &1))
   end
 
   defp normalize_aliases({:error, _, _}), do: []
