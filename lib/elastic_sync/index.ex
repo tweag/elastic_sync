@@ -4,21 +4,6 @@ defmodule ElasticSync.Index do
 
   defstruct [:name, :type, :alias]
 
-  def merge(%__MODULE__{} = index, opts) when is_list(opts) do
-    merge(index, Enum.into(opts, %{}))
-  end
-  def merge(%__MODULE__{} = index, %{index: name} = opts) do
-    opts =
-      opts
-      |> Map.delete(:index)
-      |> Map.put(:name, name)
-
-    merge(index, opts)
-  end
-  def merge(%__MODULE__{} = index, opts) do
-    Map.merge(index, opts)
-  end
-
   def to_list(%__MODULE__{name: name, type: type}) do
     [index: name, type: type]
   end
@@ -67,6 +52,16 @@ defmodule ElasticSync.Index do
          {:ok, _, _} <- replace_alias(index),
          {:ok, _, _} <- remove_indicies(index),
          do: :ok
+  end
+
+  def load(%__MODULE__{name: name, type: type}, data) do
+    import Tirexs.Bulk
+
+    payload =
+      [index: name, type: type]
+      |> bulk(do: index(data))
+
+    Tirexs.bump!(payload)._bulk()
   end
 
   @doc """

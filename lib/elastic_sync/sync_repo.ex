@@ -82,7 +82,7 @@ defmodule ElasticSync.SyncRepo do
         schema
         |> ecto.stream(max_rows: 500)
         |> Stream.chunk(500)
-        |> Stream.each(&Repo.bulk_index(schema, &1, index: alias_name))
+        |> Stream.each(&Index.load(index, &1))
         |> Stream.run()
       end)
     end)
