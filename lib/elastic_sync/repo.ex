@@ -44,7 +44,7 @@ defmodule ElasticSync.Repo do
   def delete(record) do
     record
     |> to_document_url()
-    |> HTTP.delete!
+    |> HTTP.delete
   end
 
   def delete!(record) do
