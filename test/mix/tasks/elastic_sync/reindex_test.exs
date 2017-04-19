@@ -18,6 +18,6 @@ defmodule Mix.Tasks.ElasticSync.ReindexTest do
 
     Reindex.run(["ElasticSync.TestSyncRepo", "ElasticSync.Thing"])
 
-    assert {:ok, _, _} = get("/elastic_sync_test/_search?q=one")
+    assert {:ok, _, _} = get("/elastic_sync_test/_search?q=name:one")
   end
 end

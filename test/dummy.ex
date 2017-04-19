@@ -34,6 +34,9 @@ defmodule ElasticSync.Thing do
           properties: %{
             name: %{
               type: "string"
+            },
+            id: %{
+              type: "string"
             }
           }
         }
