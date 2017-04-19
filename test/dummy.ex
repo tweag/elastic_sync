@@ -32,7 +32,7 @@ defmodule ElasticSync.Thing do
       mappings: %{
         test: %{
           properties: %{
-            title: %{
+            name: %{
               type: "string"
             }
           }

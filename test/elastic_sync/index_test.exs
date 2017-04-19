@@ -10,7 +10,7 @@ defmodule ElasticSync.IndexTest do
       test: %{
         properties: %{
           title: %{
-            type: "text"
+            type: "integer"
           }
         }
       }
