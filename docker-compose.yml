@@ -28,7 +28,6 @@ services:
       - _build:/app/_build
     environment:
       - MIX_ENV
-      - COVERALLS_REPO_TOKEN
       - TRAVIS
       - TRAVIS_JOB_ID
       - POSTGRES_HOST=postgres

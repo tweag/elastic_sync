@@ -32,6 +32,10 @@ defmodule ElasticSync.SchemaTest do
     use ElasticSync.Schema, index: "foo", type: "bar", config: {ElasticSync.SchemaTest, :config}
   end
 
+  @simple [index: "foo", type: "foo"]
+  @with_type [index: "foo", type: "bar"]
+  @with_config [index: "foo", type: "bar", config: {ElasticSync.SchemaTest, :config}]
+
   test "__elastic_sync__/1" do
     expected = %ElasticSync.Schema{index: "foo", type: "foo", config: []}
     assert expected == Simple.__elastic_sync__
@@ -48,16 +52,39 @@ defmodule ElasticSync.SchemaTest do
   end
 
   test "get/2" do
-    assert Schema.get(Simple, :index) == "foo"
-    assert Schema.get(Simple, :type) == "foo"
-    assert Schema.get(Simple, :config) == []
+    Enum.each @simple, fn {k, v} ->
+      assert Schema.get(Simple, k) == v
+      assert Schema.get(Simple.__elastic_sync__, k) == v
+    end
 
-    assert Schema.get(WithType, :index) == "foo"
-    assert Schema.get(WithType, :type) == "bar"
-    assert Schema.get(WithType, :config) == []
+    Enum.each @with_type, fn {k, v} ->
+      assert Schema.get(WithType, k) == v
+      assert Schema.get(WithType.__elastic_sync__, k) == v
+    end
 
-    assert Schema.get(WithConfig, :index) == "foo"
-    assert Schema.get(WithConfig, :type) == "bar"
-    assert Schema.get(WithConfig, :config) == ElasticSync.SchemaTest.config()
+    Enum.each @with_config, fn {k, v} ->
+      assert Schema.get(WithConfig, k) == v
+      assert Schema.get(WithConfig.__elastic_sync__, k) == v
+    end
+  end
+
+  test "merge/2" do
+    expected = %Schema{index: "blah", type: "foo"}
+    assert Schema.merge(Simple, %{index: "blah"}) == expected
+    assert Schema.merge(Simple.__elastic_sync__, %{index: "blah"}) == expected
+
+    assert Schema.merge(Simple.__elastic_sync__, [index: "blah"]) == expected
+    assert Schema.merge(Simple.__elastic_sync__, [index: "blah"]) == expected
+  end
+
+  test "to_list/1" do
+    assert Schema.to_list(Simple) == @simple
+    assert Schema.to_list(Simple.__elastic_sync__) == @simple
+
+    assert Schema.to_list(WithType) == @with_type
+    assert Schema.to_list(WithType.__elastic_sync__) == @with_type
+
+    assert Schema.to_list(WithConfig) == @with_config
+    assert Schema.to_list(WithConfig.__elastic_sync__) == @with_config
   end
 end
