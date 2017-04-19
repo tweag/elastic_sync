@@ -3,18 +3,20 @@ defmodule ElasticSync.SchemaTest do
 
   alias ElasticSync.Schema
 
-  def config do
-    %{
-      mappings: %{
-        test: %{
-          properties: %{
-            title: %{
-              type: "text"
-            }
+  @config %{
+    mappings: %{
+      test: %{
+        properties: %{
+          title: %{
+            type: "text"
           }
         }
       }
     }
+  }
+
+  def config do
+    @config
   end
 
   defmodule Simple do
@@ -32,17 +34,17 @@ defmodule ElasticSync.SchemaTest do
     use ElasticSync.Schema, index: "foo", type: "bar", config: {ElasticSync.SchemaTest, :config}
   end
 
-  @simple [index: "foo", type: "foo"]
-  @with_type [index: "foo", type: "bar"]
-  @with_config [index: "foo", type: "bar", config: {ElasticSync.SchemaTest, :config}]
+  @simple [config: %{}, index: "foo", type: "foo"]
+  @with_type [config: %{}, index: "foo", type: "bar"]
+  @with_config [config: @config, index: "foo", type: "bar"]
 
   test "__elastic_sync__/1" do
-    expected = %ElasticSync.Schema{index: "foo", type: "foo", config: []}
+    expected = %ElasticSync.Schema{index: "foo", type: "foo", config: %{}}
     assert expected == Simple.__elastic_sync__
   end
 
   test "__elastic_sync__/1 with type" do
-    expected = %ElasticSync.Schema{index: "foo", type: "bar", config: []}
+    expected = %ElasticSync.Schema{index: "foo", type: "bar", config: %{}}
     assert expected == WithType.__elastic_sync__
   end
 
@@ -69,7 +71,7 @@ defmodule ElasticSync.SchemaTest do
   end
 
   test "merge/2" do
-    expected = %Schema{index: "blah", type: "foo"}
+    expected = %Schema{index: "blah", type: "foo", config: %{}}
     assert Schema.merge(Simple, %{index: "blah"}) == expected
     assert Schema.merge(Simple.__elastic_sync__, %{index: "blah"}) == expected
 
