@@ -78,7 +78,7 @@ defmodule ElasticSync.SyncRepo do
 
     schema
     |> Schema.get(:index)
-    |> Index.transition(fn alias_name ->
+    |> Index.transition(Schema.get(schema, :config), fn alias_name ->
       normalize ecto.transaction(fn ->
         schema
         |> ecto.stream(max_rows: 500)
@@ -86,7 +86,7 @@ defmodule ElasticSync.SyncRepo do
         |> Stream.each(&Repo.bulk_index(schema, &1, index: alias_name))
         |> Stream.run()
       end)
-    end, Schema.get(schema, :config))
+    end)
   end
 
   defp normalize({:ok, :ok}), do: :ok

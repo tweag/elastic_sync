@@ -33,7 +33,7 @@ defmodule ElasticSync.Thing do
         test: %{
           properties: %{
             title: %{
-              type: "text"
+              type: "string"
             }
           }
         }

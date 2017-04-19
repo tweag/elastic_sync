@@ -8,7 +8,7 @@ defmodule ElasticSync.SchemaTest do
       test: %{
         properties: %{
           title: %{
-            type: "text"
+            type: "string"
           }
         }
       }

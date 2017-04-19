@@ -6,7 +6,7 @@ defmodule ElasticSync.Index do
   def create(names, config \\ []) do
     names
     |> API.index
-    |> HTTP.put(Tirexs.get_uri_env(), config)
+    |> HTTP.put(config)
   end
 
   def remove(names) do
@@ -28,8 +28,8 @@ defmodule ElasticSync.Index do
     |> HTTP.post
   end
 
-  def transition(name, fun, config \\ []) do
-    transition(name, get_new_alias_name(name), fun, config)
+  def transition(name, config, fun) do
+    transition(name, get_new_alias_name(name), config, fun)
   end
 
   @doc """
@@ -41,7 +41,7 @@ defmodule ElasticSync.Index do
   4. Set the newly created index to the alias.
   5. Remove old indicies.
   """
-  def transition(name, alias_name, fun, config) do
+  def transition(name, alias_name, config, fun) do
     with {:ok, _, _} <- create(alias_name, config),
          :ok  <- fun.(alias_name),
          {:ok, _, _} <- refresh(alias_name),
