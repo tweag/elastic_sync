@@ -44,7 +44,7 @@ defmodule ElasticSync.Mixfile do
      "coveralls.html": :test]
   end
 
-  defp elixirc_paths(:test), do: elixirc_paths() ++ ["test/dummy.exs"]
+  defp elixirc_paths(:test), do: elixirc_paths() ++ ["test/dummy.ex"]
   defp elixirc_paths(_), do: elixirc_paths()
   defp elixirc_paths(), do: ["lib"]
 

@@ -1,20 +1,27 @@
 defmodule ElasticSync.Schema do
-  defstruct [:index, :type]
+  defstruct [:index, :type, :config]
 
   defmacro __using__(opts) do
     index  = Keyword.get(opts, :index)
     type   = Keyword.get(opts, :type, index)
+    {mod, fun} = Keyword.get(opts, :config, {ElasticSync.Schema, :default_config})
 
     validate_index_name!(index)
+    validate_config!(mod, fun)
 
     quote do
       def __elastic_sync__ do
         %ElasticSync.Schema{
           index: unquote(index),
-          type: unquote(type)
+          type: unquote(type),
+          config: apply(unquote(mod), unquote(fun), [])
         }
       end
     end
+  end
+
+  def default_config do
+    []
   end
 
   def get(%__MODULE__{} = schema, key) do
@@ -51,4 +58,21 @@ defmodule ElasticSync.Schema do
     """
   end
   defp validate_index_name!(_), do: nil
+
+  defp validate_config!(nil, _) do
+    raise ArgumentError, """
+    You must provide a module in your tuple. For example:
+
+    use ElasticSync.Schema, index: "foods", config: {Food.Genre, :config}
+    """
+  end
+
+  defp validate_config!(_, nil) do
+    raise ArgumentError, """
+    You must provide an atom for the function name of your config in your tuple. For example:
+
+    use ElasticSync.Schema, index: "foods", config: {Food.Genre, :config}
+    """
+  end
+  defp validate_config!(_, _), do: nil
 end

@@ -86,7 +86,7 @@ defmodule ElasticSync.SyncRepo do
         |> Stream.each(&Repo.bulk_index(schema, &1, index: alias_name))
         |> Stream.run()
       end)
-    end)
+    end, Schema.get(schema, :config))
   end
 
   defp normalize({:ok, :ok}), do: :ok

@@ -3,10 +3,10 @@ defmodule ElasticSync.Index do
   alias Tirexs.Resources.APIs, as: API
 
   # TODO: Allow developers to control mappings here
-  def create(names) do
+  def create(names, config \\ []) do
     names
     |> API.index
-    |> HTTP.put
+    |> HTTP.put(Tirexs.get_uri_env(), config)
   end
 
   def remove(names) do
@@ -28,8 +28,8 @@ defmodule ElasticSync.Index do
     |> HTTP.post
   end
 
-  def transition(name, fun) do
-    transition(name, get_new_alias_name(name), fun)
+  def transition(name, fun, config \\ []) do
+    transition(name, get_new_alias_name(name), fun, config)
   end
 
   @doc """
@@ -41,8 +41,8 @@ defmodule ElasticSync.Index do
   4. Set the newly created index to the alias.
   5. Remove old indicies.
   """
-  def transition(name, alias_name, fun) do
-    with {:ok, _, _} <- create(alias_name),
+  def transition(name, alias_name, fun, config) do
+    with {:ok, _, _} <- create(alias_name, config),
          :ok  <- fun.(alias_name),
          {:ok, _, _} <- refresh(alias_name),
          {:ok, _, _} <- replace_alias(name, index: alias_name),
