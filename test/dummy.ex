@@ -27,23 +27,20 @@ defmodule ElasticSync.Thing do
   end
 
   def index_config do
-    case ElasticSync.version() do
-      "1.7.6" -> %{}
-      _ -> %{
-        settings: %{},
-        mappings: %{
-          test: %{
-            properties: %{
-              name: %{
-                type: "string"
-              },
-              id: %{
-                type: "string"
-              }
+    %{
+      settings: %{},
+      mappings: %{
+        test: %{
+          properties: %{
+            name: %{
+              type: "string"
+            },
+            id: %{
+              type: "string"
             }
           }
         }
       }
-    end
+    }
   end
 end
