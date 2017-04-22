@@ -5,6 +5,17 @@ defmodule ElasticSync.IndexTest do
   alias ElasticSync.Index
 
   @index "elastic_sync_index_test"
+  @config %{
+    mappings: %{
+      test: %{
+        properties: %{
+          title: %{
+            type: "integer"
+          }
+        }
+      }
+    }
+  }
 
   setup do
     HTTP.delete!("*")
@@ -22,6 +33,13 @@ defmodule ElasticSync.IndexTest do
     assert {:error, _, _} = HTTP.get(@index)
     {:ok, _, _} = Index.create(@index)
     assert {:ok, _, _} = HTTP.get(@index)
+  end
+
+  test "create/1 with config" do
+    assert {:error, _, _} = HTTP.get(@index)
+    {:ok, _, _} = Index.create(@index, @config)
+    assert {:ok, _, _} = HTTP.get(@index)
+    assert {:ok, 200, %{String.to_atom(@index) => @config}} == HTTP.get("#{@index}/_mappings")
   end
 
   test "replace_alias/2" do

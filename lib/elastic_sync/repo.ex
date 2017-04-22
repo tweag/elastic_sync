@@ -78,7 +78,8 @@ defmodule ElasticSync.Repo do
     payload =
       schema
       |> Schema.merge(opts)
-      |> Schema.to_list
+      |> Map.take([:index, :type])
+      |> Map.to_list()
       |> bulk(do: index(data))
 
     Tirexs.bump!(payload)._bulk()
