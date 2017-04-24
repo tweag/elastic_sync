@@ -15,10 +15,6 @@ defmodule ElasticSync.IndexTest do
     :ok
   end
 
-  test "to_list/1" do
-    assert Index.to_list(@index) == [index: @index.name, type: @index.type]
-  end
-
   test "put_alias/1" do
     index1 = Index.put_alias(@index)
     assert index1.alias == @index.name

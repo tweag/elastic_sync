@@ -5,8 +5,8 @@ defmodule ElasticSyncTest do
 
   doctest ElasticSync
 
-  test "get version" do
-    {:ok, 200, info} = get("/")
-    assert info.version == ElasticSync.version()
+  test "es_version/0" do
+    {:ok, 200, %{version: %{number: version}}} = get("/")
+    assert ElasticSync.version() == version
   end
 end

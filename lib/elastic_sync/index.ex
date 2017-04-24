@@ -2,10 +2,50 @@ defmodule ElasticSync.Index do
   alias Tirexs.HTTP
   alias Tirexs.Resources.APIs, as: API
 
-  defstruct name: nil, type: nil, alias: nil, config: %{}
+  defstruct [
+    name: nil,
+    type: nil,
+    alias: nil,
+    config: {ElasticSync.Index, :default_config}
+  ]
 
-  def to_list(%__MODULE__{name: name, type: type}) do
-    [index: name, type: type]
+  defmacro __using__(opts) do
+    name   = Keyword.get(opts, :index)
+    type   = Keyword.get(opts, :type, name)
+    config = Keyword.get(opts, :config)
+
+    quote do
+      def __elastic_sync__ do
+        alias ElasticSync.Index
+
+        %Index{}
+        |> Index.put(:name, unquote(name))
+        |> Index.put(:type, unquote(type))
+        |> Index.put(:config, unquote(config))
+      end
+    end
+  end
+
+  def put(_index, :name, nil) do
+    raise ArgumentError, """
+    You must provide an index name. For example:
+
+    use ElasticSync.Schema, index: "foods"
+    """
+  end
+  def put(index, :config, nil), do: index
+  def put(_index, :config, value) when not is_tuple(value) do
+    IO.inspect(value)
+    raise ArgumentError, """
+    The index config must be a tuple in the format.
+
+    use ElasticSync.Schema, index: "foods", config: {Food, :index_config}
+    """
+  end
+  def put(index, key, value), do: Map.put(index, key, value)
+
+  def default_config do
+    %{}
   end
 
   def put_alias(%__MODULE__{name: name, alias: alias_name} = index) do
@@ -15,10 +55,10 @@ defmodule ElasticSync.Index do
     %__MODULE__{index | name: next_name, alias: base_name}
   end
 
-  def create(%__MODULE__{name: name, config: config}) do
+  def create(%__MODULE__{name: name, config: {mod, fun}}) do
     name
     |> API.index
-    |> HTTP.put(config)
+    |> HTTP.put(apply(mod, fun, []))
   end
 
   def remove(%__MODULE__{name: name}) do
