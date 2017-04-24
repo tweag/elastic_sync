@@ -2,7 +2,7 @@ defmodule ElasticSync.Index do
   alias Tirexs.HTTP
   alias Tirexs.Resources.APIs, as: API
 
-  defstruct [:name, :type, :alias]
+  defstruct [:name, :type, :alias, :config]
 
   def to_list(%__MODULE__{name: name, type: type}) do
     [index: name, type: type]
