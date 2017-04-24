@@ -77,7 +77,7 @@ defmodule ElasticSync.SyncRepo do
     ecto = mod.__elastic_sync__(:ecto)
 
     schema.__elastic_sync__
-    |> Index.transition(fn alias_name ->
+    |> Index.transition(fn index ->
       normalize ecto.transaction(fn ->
         schema
         |> ecto.stream(max_rows: 500)
