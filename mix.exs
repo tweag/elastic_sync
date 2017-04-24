@@ -34,7 +34,8 @@ defmodule ElasticSync.Mixfile do
      {:ecto, "~> 2.1", optional: true},
      {:ecto, "~> 2.1", only: [:dev, :test]},
      {:postgrex, ">= 0.0.0", only: :test},
-     {:excoveralls, "~> 0.6", only: :test}]
+     {:excoveralls, "~> 0.6", only: :test},
+     {:mix_test_watch, "~> 0.3", only: :dev, runtime: false}]
   end
 
   defp preferred_cli_env do

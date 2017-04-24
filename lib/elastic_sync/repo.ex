@@ -61,12 +61,7 @@ defmodule ElasticSync.Repo do
 
   @doc false
   def load(index, records) do
-    data =
-      records
-      |> Enum.map(&to_document/1)
-      |> Enum.map(&to_reindex_document/1)
-
-    Index.load(index, data)
+    Index.load(index, Enum.map(records, &to_document/1))
   end
 
   def to_search_url(schema) do
@@ -88,12 +83,5 @@ defmodule ElasticSync.Repo do
 
   def to_document(record) do
     record.__struct__.to_search_document(record)
-  end
-
-  defp to_reindex_document(document) when is_list(document) do
-    document
-  end
-  defp to_reindex_document(document) do
-    Enum.into(document, [])
   end
 end

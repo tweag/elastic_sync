@@ -2,15 +2,17 @@ defmodule ElasticSync.Index do
   alias Tirexs.HTTP
   alias Tirexs.Resources.APIs, as: API
 
-  defstruct [:name, :type, :alias, :config]
+  defstruct name: nil, type: nil, alias: nil, config: %{}
 
   def to_list(%__MODULE__{name: name, type: type}) do
     [index: name, type: type]
   end
 
-  def put_alias(%__MODULE__{name: name} = index) do
-    next_name = get_new_index_name(name)
-    %__MODULE__{index | name: next_name, alias: name}
+  def put_alias(%__MODULE__{name: name, alias: alias_name} = index) do
+    ms = :os.system_time(:milli_seconds)
+    base_name = alias_name || name
+    next_name = base_name <> "-" <> to_string(ms)
+    %__MODULE__{index | name: next_name, alias: base_name}
   end
 
   def create(%__MODULE__{name: name, config: config}) do
@@ -46,16 +48,23 @@ defmodule ElasticSync.Index do
   5. Remove old indicies.
   """
   def transition(%__MODULE__{} = index, fun) do
-    with {:ok, _, _} <- create(index),
+    with index <- put_alias(index),
+         {:ok, _, _} <- create(index),
          :ok  <- fun.(index),
          {:ok, _, _} <- refresh(index),
          {:ok, _, _} <- replace_alias(index),
-         {:ok, _, _} <- remove_indicies(index),
-         do: :ok
+         {:ok, _, _} <- clean_indicies(index),
+         do: {:ok, index}
   end
 
   def load(%__MODULE__{name: name, type: type}, data) do
     import Tirexs.Bulk
+
+    # Tirexs requires keyword lists...
+    data = Enum.map data, fn
+      doc when is_list(doc) -> doc
+      doc -> Enum.into(doc, [])
+    end
 
     payload =
       [index: name, type: type]
@@ -72,17 +81,16 @@ defmodule ElasticSync.Index do
     add = %{add: %{alias: alias_name, index: name}}
 
     remove =
-      name
+      alias_name
       |> get_aliases()
       |> Enum.map(fn a ->
         %{remove: %{alias: alias_name, index: a}}
       end)
 
-    API._aliases()
-    |> HTTP.post(%{actions: remove ++ [add]})
+    HTTP.post(API._aliases(), %{actions: remove ++ [add]})
   end
 
-  def remove_indicies(%__MODULE__{name: name, alias: alias_name}) do
+  def clean_indicies(%__MODULE__{name: name, alias: alias_name}) do
     alias_name
     |> get_aliases()
     |> Enum.filter(&(&1 != name))
@@ -98,11 +106,6 @@ defmodule ElasticSync.Index do
     names
     |> API.index
     |> HTTP.delete
-  end
-
-  defp get_new_index_name(name) do
-    ms = :os.system_time(:milli_seconds)
-    name <> "-" <> to_string(ms)
   end
 
   defp get_aliases(name) do
