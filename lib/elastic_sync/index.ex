@@ -30,16 +30,15 @@ defmodule ElasticSync.Index do
     raise ArgumentError, """
     You must provide an index name. For example:
 
-    use ElasticSync.Schema, index: "foods"
+    use ElasticSync.Index, index: "foods"
     """
   end
   def put(index, :config, nil), do: index
   def put(_index, :config, value) when not is_tuple(value) do
-    IO.inspect(value)
     raise ArgumentError, """
     The index config must be a tuple in the format.
 
-    use ElasticSync.Schema, index: "foods", config: {Food, :index_config}
+    use ElasticSync.Index, index: "foods", config: {Food, :index_config}
     """
   end
   def put(index, key, value), do: Map.put(index, key, value)

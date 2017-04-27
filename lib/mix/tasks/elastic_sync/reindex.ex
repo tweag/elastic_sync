@@ -7,10 +7,10 @@ defmodule Mix.Tasks.ElasticSync.Reindex do
     end
 
     case reindex(args) do
-      :ok ->
-        :ok
       {:error, error} ->
         Mix.raise "Reindex failed, error: #{inspect error}"
+      other ->
+        other
     end
   end
 

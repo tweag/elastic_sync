@@ -8,7 +8,10 @@ defmodule ElasticSync.RepoTest do
 
   defmodule Thing do
     defstruct [:id, :name]
-    use ElasticSync.Schema, index: "elastic_sync_test", type: "things"
+
+    use ElasticSync.Index,
+      index: "elastic_sync_repo_test",
+      type: "things"
 
     def to_search_document(struct) do
       Map.take(struct, [:id, :name])
@@ -16,7 +19,7 @@ defmodule ElasticSync.RepoTest do
   end
 
   defp find(id) do
-    HTTP.get("/elastic_sync_test/things/#{id}")
+    HTTP.get("/elastic_sync_repo_test/things/#{id}")
   end
 
   setup do
@@ -26,11 +29,11 @@ defmodule ElasticSync.RepoTest do
   end
 
   test "to_index_url/1 generates a valid url" do
-    assert Repo.to_index_url(Thing) == "elastic_sync_test/things"
+    assert Repo.to_index_url(Thing) == "elastic_sync_repo_test/things"
   end
 
   test "to_document_url/1 generates a valid url" do
-    assert Repo.to_document_url(%Thing{id: 1}) == "elastic_sync_test/things/1"
+    assert Repo.to_document_url(%Thing{id: 1}) == "elastic_sync_repo_test/things/1"
   end
 
   test "insert/1" do
@@ -76,7 +79,7 @@ defmodule ElasticSync.RepoTest do
       %Thing{id: 3, name: "sausage"},
     ]
 
-    {:ok, 200, %{hits: %{hits: hits}}} = HTTP.get("/elastic_sync_test/things/_search")
+    {:ok, 200, %{hits: %{hits: hits}}} = HTTP.get("/elastic_sync_repo_test/things/_search")
     assert length(hits) == 3
   end
 

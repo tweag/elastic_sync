@@ -10,9 +10,35 @@ defmodule ElasticSync.IndexTest do
     type: "elastic_sync_index_test"
   }
 
+  @config {Index, :default_config}
+
   setup do
     HTTP.delete!("*")
     :ok
+  end
+
+  test "put/3 with a name" do
+    assert Index.put(@index, :name, "foo").name == "foo"
+  end
+
+  test "put/3 with a nil name" do
+    assert_raise ArgumentError, fn ->
+      Index.put(@index, :name, nil)
+    end
+  end
+
+  test "put/3 with config tuple" do
+    assert Index.put(@index, :config, @config).config == @config
+  end
+
+  test "put/3 with nil config" do
+    assert Index.put(@index, :config, nil) == @index
+  end
+
+  test "put/3 with non-tuple" do
+    assert_raise ArgumentError, fn ->
+      Index.put(@index, :config, "foo")
+    end
   end
 
   test "put_alias/1" do
