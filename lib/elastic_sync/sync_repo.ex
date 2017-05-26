@@ -1,5 +1,5 @@
 defmodule ElasticSync.SyncRepo do
-  alias ElasticSync.{Repo, Schema, Index}
+  alias ElasticSync.{Repo, Index}
 
   defmacro __using__(opts) do
     ecto = Keyword.fetch!(opts, :ecto)
@@ -76,14 +76,13 @@ defmodule ElasticSync.SyncRepo do
   def reindex(mod, schema) do
     ecto = mod.__elastic_sync__(:ecto)
 
-    schema
-    |> Schema.get(:index)
-    |> Index.transition(Schema.get(schema, :config), fn alias_name ->
+    schema.__elastic_sync__
+    |> Index.transition(fn index ->
       normalize ecto.transaction(fn ->
         schema
         |> ecto.stream(max_rows: 500)
         |> Stream.chunk(500)
-        |> Stream.each(&Repo.bulk_index(schema, &1, index: alias_name))
+        |> Stream.each(&Repo.load(index, &1))
         |> Stream.run()
       end)
     end)

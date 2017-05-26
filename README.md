@@ -34,7 +34,7 @@ end
 
 ## Usage
 
-### ElasticSync.Schema
+### ElasticSync.Index
 
 Like Ecto, ElasticSync has a concept of a schema and a repo. Here's how you'd configure your schema:
 
@@ -42,9 +42,7 @@ Like Ecto, ElasticSync has a concept of a schema and a repo. Here's how you'd co
 defmodule MyApp.Food do
   defstruct [:id, :name]
 
-  use ElasticSync.Schema,
-    index: "foods",
-    type: "foods"
+  use ElasticSync.Index, index: "foods"
 
   @doc """
   Convert a struct to a plain ol' map. This will become our document.

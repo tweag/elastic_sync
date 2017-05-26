@@ -9,8 +9,12 @@ end
 
 defmodule ElasticSync.Thing do
   use Ecto.Schema
+
+  use ElasticSync.Index,
+    index: "elastic_sync_thing",
+    config: {ElasticSync.Thing, :index_config}
+
   import Ecto.Changeset
-  use ElasticSync.Schema, index: "elastic_sync_test", config: { ElasticSync.Thing, :index_config }
 
   schema "things" do
     field :name, :string
@@ -32,12 +36,8 @@ defmodule ElasticSync.Thing do
       mappings: %{
         test: %{
           properties: %{
-            name: %{
-              type: "string"
-            },
-            id: %{
-              type: "string"
-            }
+            name: %{type: "string"},
+            id: %{type: "string"}
           }
         }
       }
