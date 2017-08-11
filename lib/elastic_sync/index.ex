@@ -1,7 +1,4 @@
 defmodule ElasticSync.Index do
-  alias Tirexs.HTTP
-  alias Tirexs.Resources.APIs, as: API
-
   defstruct [
     name: nil,
     type: nil,

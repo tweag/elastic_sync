@@ -10,7 +10,7 @@ defmodule Mix.Tasks.ElasticSync.Reindex do
     repo = sync_repo.__elastic_sync__(:ecto)
     ensure_started!(repo, args)
 
-    case sync_repo.reindex(schema) do
+    case sync_repo.reindex(schema, progress: true) do
       {:ok, _} ->
         :ok
       error ->
