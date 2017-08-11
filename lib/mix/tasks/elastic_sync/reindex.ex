@@ -1,12 +1,7 @@
 defmodule Mix.Tasks.ElasticSync.Reindex do
   import Mix.Ecto
 
-  @switches [
-    timeout: :integer,
-    batch_size: :integer,
-    progress: :boolean,
-    parallel: :boolean
-  ]
+  @switches [batch_size: :integer]
 
   def run(args) do
     Mix.Task.run "loadpaths", args

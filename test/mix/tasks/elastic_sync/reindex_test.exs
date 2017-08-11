@@ -28,13 +28,12 @@ defmodule Mix.Tasks.ElasticSync.ReindexTest do
   end
 
   test "parse!" do
-    flags  = [progress: true, timeout: 5000]
+    flags  = [batch_size: 5000]
 
     assert {TestSyncRepo, Thing, ^flags} = Reindex.parse!([
       "ElasticSync.TestSyncRepo",
       "ElasticSync.Thing",
-      "--progress",
-      "--timeout", "5000",
+      "--batch-size", "5000",
       "--extra", "20"
     ])
   end

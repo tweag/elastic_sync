@@ -31,7 +31,6 @@ defmodule ElasticSync.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [{:tirexs, "~> 0.8"},
-     {:progress_bar, "> 0.0.0"},
      {:ecto, "~> 2.1", optional: true},
      {:ecto, "~> 2.1", only: [:dev, :test]},
      {:postgrex, ">= 0.0.0", only: :test},
