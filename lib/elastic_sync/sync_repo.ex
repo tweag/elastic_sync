@@ -5,91 +5,86 @@ defmodule ElasticSync.SyncRepo do
     ecto = Keyword.fetch!(opts, :ecto)
 
     quote do
-      def __elastic_sync__(:ecto), do: unquote(ecto)
+      @ecto unquote(ecto)
+
+      def __elastic_sync__(:ecto), do: @ecto
 
       def insert(struct_or_changeset, opts \\ []) do
-        ElasticSync.SyncRepo.insert(__MODULE__, struct_or_changeset, opts)
+        ElasticSync.SyncRepo.insert(@ecto, struct_or_changeset, opts)
       end
 
       def insert!(struct_or_changeset, opts \\ []) do
-        ElasticSync.SyncRepo.insert!(__MODULE__, struct_or_changeset, opts)
+        ElasticSync.SyncRepo.insert!(@ecto, struct_or_changeset, opts)
       end
 
       def update(changeset, opts \\ []) do
-        ElasticSync.SyncRepo.update(__MODULE__, changeset, opts)
+        ElasticSync.SyncRepo.update(@ecto, changeset, opts)
       end
 
       def update!(changeset, opts \\ []) do
-        ElasticSync.SyncRepo.update!(__MODULE__, changeset, opts)
+        ElasticSync.SyncRepo.update!(@ecto, changeset, opts)
       end
 
       def delete(struct_or_changeset, opts \\ []) do
-        ElasticSync.SyncRepo.delete(__MODULE__, struct_or_changeset, opts)
+        ElasticSync.SyncRepo.delete(@ecto, struct_or_changeset, opts)
       end
 
       def delete!(struct_or_changeset, opts \\ []) do
-        ElasticSync.SyncRepo.delete!(__MODULE__, struct_or_changeset, opts)
+        ElasticSync.SyncRepo.delete!(@ecto, struct_or_changeset, opts)
       end
 
       def insert_all(schema_or_source, entries, opts \\ []) do
-        ElasticSync.SyncRepo.insert_all(__MODULE__, schema_or_source, entries, opts)
+        ElasticSync.SyncRepo.insert_all(@ecto, schema_or_source, entries, opts)
       end
 
       def reindex(schema, opts \\ []) do
-        ElasticSync.SyncRepo.reindex(__MODULE__, schema, opts)
+        ElasticSync.SyncRepo.reindex(@ecto, schema, opts)
       end
     end
   end
 
-  def insert(sync_repo, struct_or_changeset, opts \\ []) do
-    sync_one(sync_repo, :insert, [struct_or_changeset, opts])
+  def insert(ecto, struct_or_changeset, opts \\ []) do
+    sync_one(ecto, :insert, [struct_or_changeset, opts])
   end
 
-  def insert!(sync_repo, struct_or_changeset, opts \\ []) do
-    sync_one!(sync_repo, :insert!, [struct_or_changeset, opts])
+  def insert!(ecto, struct_or_changeset, opts \\ []) do
+    sync_one!(ecto, :insert!, [struct_or_changeset, opts])
   end
 
-  def update(sync_repo, changeset, opts \\ []) do
-    sync_one(sync_repo, :update, [changeset, opts])
+  def update(ecto, changeset, opts \\ []) do
+    sync_one(ecto, :update, [changeset, opts])
   end
 
-  def update!(sync_repo, changeset, opts \\ []) do
-    sync_one!(sync_repo, :update!, [changeset, opts])
+  def update!(ecto, changeset, opts \\ []) do
+    sync_one!(ecto, :update!, [changeset, opts])
   end
 
-  def delete(sync_repo, struct_or_changeset, opts \\ []) do
-    sync_one(sync_repo, :delete, [struct_or_changeset, opts])
+  def delete(ecto, struct_or_changeset, opts \\ []) do
+    sync_one(ecto, :delete, [struct_or_changeset, opts])
   end
 
-  def delete!(sync_repo, struct_or_changeset, opts \\ []) do
-    sync_one!(sync_repo, :delete!, [struct_or_changeset, opts])
+  def delete!(ecto, struct_or_changeset, opts \\ []) do
+    sync_one!(ecto, :delete!, [struct_or_changeset, opts])
   end
 
-  def insert_all(sync_repo, schema_or_source, entries, opts \\ []) do
-    ecto = sync_repo.__elastic_sync__(:ecto)
-
+  def insert_all(ecto, schema_or_source, entries, opts \\ []) do
     with {:ok, records} <- ecto.insert_all(schema_or_source, entries, opts),
          {:ok, _, _} <- Repo.insert_all(schema_or_source, records),
          do: {:ok, records}
   end
 
-  def reindex(sync_repo, schema, opts \\ []) do
-    ecto = sync_repo.__elastic_sync__(:ecto)
+  def reindex(ecto, schema, opts \\ []) do
     Reindex.run(ecto, schema, opts)
   end
 
-  defp sync_one(sync_repo, action, args) do
-    ecto = sync_repo.__elastic_sync__(:ecto)
-
+  defp sync_one(ecto, action, args) do
     with {:ok, record} <- apply(ecto, action, args),
          {:ok, _, _} <- apply(Repo, action, [record]),
          do: {:ok, record}
   end
 
-  defp sync_one!(sync_repo, action, args) do
-    ecto   = sync_repo.__elastic_sync__(:ecto)
+  defp sync_one!(ecto, action, args) do
     result = apply(ecto, action, args)
-
     apply(Repo, action, [result])
     result
   end
