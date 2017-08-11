@@ -21,8 +21,8 @@ env:
     - ES_VERSION=5.2.2
 
 install:
-  - docker-compose build
+  - docker-compose run setup
 
 script:
-  - docker-compose run app curl elasticsearch:9200
-  - docker-compose run app mix coveralls.travis
+  - docker-compose run test curl elasticsearch:9200
+  - docker-compose run test mix coveralls.travis
