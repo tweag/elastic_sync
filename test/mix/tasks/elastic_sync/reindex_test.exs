@@ -3,7 +3,7 @@ defmodule Mix.Tasks.ElasticSync.ReindexTest do
 
   alias Tirexs.HTTP
   alias Mix.Tasks.ElasticSync.Reindex
-  alias ElasticSync.{TestRepo, Thing}
+  alias ElasticSync.{TestRepo, TestSyncRepo, Thing}
 
   @index "elastic_sync_thing"
   @search "/#{@index}/_search"
@@ -25,6 +25,18 @@ defmodule Mix.Tasks.ElasticSync.ReindexTest do
     ExUnit.CaptureIO.capture_io fn ->
       assert :ok == Reindex.run(["ElasticSync.TestSyncRepo", "ElasticSync.Thing"])
     end
+  end
+
+  test "parse!" do
+    flags  = [progress: true, timeout: 5000]
+
+    assert {TestSyncRepo, Thing, ^flags} = Reindex.parse!([
+      "ElasticSync.TestSyncRepo",
+      "ElasticSync.Thing",
+      "--progress",
+      "--timeout", "5000",
+      "--extra", "20"
+    ])
   end
 
   describe "the first reindex" do

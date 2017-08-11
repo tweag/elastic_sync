@@ -1,16 +1,26 @@
 defmodule Mix.Tasks.ElasticSync.Reindex do
+  import Mix.Ecto
+
+  @switches [
+    timeout: :integer,
+    batch_size: :integer,
+    progress: :boolean,
+    parallel: :boolean
+  ]
+
   def run(args) do
     Mix.Task.run "loadpaths", args
 
     unless "--no-compile" in args do
-      Mix.Project.compile(args)
+      Mix.Project.compile([])
     end
 
-    {sync_repo, schema, args} = parse!(args)
+    {sync_repo, schema, opts} = parse!(args)
     repo = sync_repo.__elastic_sync__(:ecto)
-    ensure_started!(repo, args)
 
-    case sync_repo.reindex(schema, progress: true) do
+    ensure_started(repo, [])
+
+    case sync_repo.reindex(schema, opts) do
       {:ok, _} ->
         :ok
       error ->
@@ -18,20 +28,12 @@ defmodule Mix.Tasks.ElasticSync.Reindex do
     end
   end
 
-  defp ensure_started!(repo, args) do
-    case Mix.Ecto.ensure_started(repo, args) do
-      {:ok, _, _} ->
-        :ok
-      error ->
-        Mix.raise "Failed to start Ecto, error: #{inspect error}."
-    end
-  end
-
-  defp parse!(args) when length(args) < 2 do
+  def parse!(args) when length(args) < 2 do
     Mix.raise "Wrong number of arguments."
   end
-  defp parse!([sync_repo_name, schema_name | args]) do
-    {compile!(sync_repo_name), compile!(schema_name), args}
+  def parse!([sync_repo_name, schema_name | args]) do
+    {opts, _, _} = OptionParser.parse(args, strict: @switches)
+    {compile!(sync_repo_name), compile!(schema_name), opts}
   end
 
   defp compile!(name) do
