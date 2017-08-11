@@ -16,6 +16,11 @@ defmodule ElasticSync.Repo do
     |> to_search_url()
     |> HTTP.post(query)
   end
+  def search(schema) do
+    schema
+    |> to_search_url()
+    |> HTTP.get
+  end
 
   def insert(record) do
     record.__struct__
@@ -55,13 +60,13 @@ defmodule ElasticSync.Repo do
 
   def insert_all(schema, records) when is_list(records) do
     with {:ok, 200, response} <- load(schema.__elastic_sync__, records),
-         {:ok, 200, _} <- Index.refresh(schema.__elastic_sync__),
+         :ok <- Index.HTTP.refresh(schema.__elastic_sync__),
          do: {:ok, 200, response}
   end
 
   @doc false
   def load(index, records) do
-    Index.load(index, Enum.map(records, &to_document/1))
+    Index.HTTP.load(index, Enum.map(records, &to_document/1))
   end
 
   def to_search_url(schema) do

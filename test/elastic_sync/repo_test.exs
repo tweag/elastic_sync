@@ -83,17 +83,20 @@ defmodule ElasticSync.RepoTest do
     assert length(hits) == 3
   end
 
-  test "search/3" do
+  test "search/2 with a binary" do
     Repo.insert_all Thing, [
       %Thing{id: 1, name: "meatloaf"},
       %Thing{id: 2, name: "pizza"}
     ]
 
+    {:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Thing)
+    assert length(hits) == 2
+
     {:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Thing, "meatloaf")
     assert length(hits) == 1
   end
 
-  test "search/3 with map" do
+  test "search/2 with map" do
     Repo.insert_all Thing, [
       %Thing{id: 1, name: "meatloaf"},
       %Thing{id: 2, name: "pizza"}
@@ -104,7 +107,7 @@ defmodule ElasticSync.RepoTest do
     assert length(hits) == 1
   end
 
-  test "search/3 with DSL" do
+  test "search/2 with DSL" do
     import Tirexs.Search
 
     Repo.insert_all Thing, [

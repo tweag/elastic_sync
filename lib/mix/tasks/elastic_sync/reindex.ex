@@ -9,8 +9,13 @@ defmodule Mix.Tasks.ElasticSync.Reindex do
     {sync_repo, schema, args} = parse!(args)
     repo = sync_repo.__elastic_sync__(:ecto)
     ensure_started!(repo, args)
-    sync_repo.reindex(schema)
-    :ok
+
+    case sync_repo.reindex(schema) do
+      {:ok, _} ->
+        :ok
+      error ->
+        Mix.raise "The following error occurred:\n  #{inspect error}"
+    end
   end
 
   defp ensure_started!(repo, args) do

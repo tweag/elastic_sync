@@ -3,7 +3,7 @@ defmodule ElasticSync.SyncRepoTest do
 
   doctest ElasticSync.SyncRepo
 
-  alias ElasticSync.{Thing, TestSyncRepo}
+  alias ElasticSync.{Thing, TestRepo, TestSyncRepo}
 
   setup do
     Tirexs.HTTP.delete!("*")
@@ -65,5 +65,15 @@ defmodule ElasticSync.SyncRepoTest do
   test "delete!" do
     thing = TestSyncRepo.insert!(%Thing{name: "meatloaf"})
     assert %Thing{name: "meatloaf"} = TestSyncRepo.delete!(thing)
+  end
+
+  test "reindex" do
+    TestRepo.insert!(%Thing{name: "one"})
+    TestRepo.insert!(%Thing{name: "two"})
+    TestRepo.insert!(%Thing{name: "three"})
+
+    assert {:ok, _} = TestSyncRepo.reindex(Thing)
+    assert {:ok, _, %{hits: %{hits: hits}}} = ElasticSync.Repo.search(Thing)
+    assert length(hits) == 3
   end
 end

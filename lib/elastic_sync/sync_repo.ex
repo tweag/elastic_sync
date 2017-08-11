@@ -1,6 +1,8 @@
 defmodule ElasticSync.SyncRepo do
   alias ElasticSync.{Repo, Index}
 
+  @batch_size 500
+
   defmacro __using__(opts) do
     ecto = Keyword.fetch!(opts, :ecto)
 
@@ -74,22 +76,25 @@ defmodule ElasticSync.SyncRepo do
   end
 
   def reindex(mod, schema) do
-    ecto = mod.__elastic_sync__(:ecto)
-
-    schema.__elastic_sync__
-    |> Index.transition(fn index ->
-      normalize ecto.transaction(fn ->
-        schema
-        |> ecto.stream(max_rows: 500)
-        |> Stream.chunk(500)
-        |> Stream.each(&Repo.load(index, &1))
-        |> Stream.run()
-      end)
+    Index.HTTP.transition(schema.__elastic_sync__, fn index ->
+      mod.__elastic_sync__(:ecto)
+      |> each_batch(schema, &Repo.load(index, &1))
+      |> normalize_stream()
     end)
   end
 
-  defp normalize({:ok, :ok}), do: :ok
-  defp normalize(other), do: other
+  defp each_batch(ecto, schema, fun) do
+    ecto.transaction(fn ->
+      schema
+      |> ecto.stream(max_rows: @batch_size)
+      |> Stream.chunk(@batch_size, @batch_size, [])
+      |> Stream.each(fun)
+      |> Stream.run
+    end)
+  end
+
+  defp normalize_stream({:ok, :ok}), do: :ok
+  defp normalize_stream(other), do: other
 
   defp sync_one(mod, action, args) do
     ecto = mod.__elastic_sync__(:ecto)
