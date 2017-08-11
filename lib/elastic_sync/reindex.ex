@@ -13,8 +13,8 @@ defmodule ElasticSync.Reindex do
         schema
         |> ecto.stream(max_rows: batch_size)
         |> Stream.chunk(batch_size, batch_size, [])
-        |> Stream.each(&Repo.load(new_index, &1))
         |> log_progress(ecto, schema, progress)
+        |> Task.async_stream(&Repo.load(new_index, &1))
         |> Stream.run
       end
 

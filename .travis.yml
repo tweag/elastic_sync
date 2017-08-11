@@ -24,5 +24,4 @@ install:
   - docker-compose run setup
 
 script:
-  - docker-compose run test curl elasticsearch:9200
   - docker-compose run test mix coveralls.travis
