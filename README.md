@@ -150,20 +150,25 @@ config :tirexs, :uri, "http://your-endpoint.com:9200"
 
 ## Development
 
-The easiest way to run the tests locally is by using docker-compose.
+The easiest way to run the tests locally is by using docker-compose. To setup your environment, run the following commands:
 
 ```
 $ git clone git@github.com:promptworks/elastic_sync
 $ cd elastic_sync
-$ docker-compose run app mix test
+$ docker-compose run setup
 ```
 
-To run the tests against a specific elasticsearch version, you can use the `ES_VERSION` environment variable.
+To run the tests, just run:
 
 ```
-$ docker-compose stop
+$ docker-compose run test
+```
+
+To run the tests against a specific elasticsearch version, you can use the `ES_VERSION` environment variable. Make sure to stop all running containers after doing this:
+
+```
 $ export ES_VERSION=1.7.6
-$ docker-compose run app mix test
+$ docker-compose stop
 ```
 
 ## TODO

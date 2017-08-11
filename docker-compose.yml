@@ -6,26 +6,23 @@ services:
     ports:
       - '9200'
     volumes:
-      - elasticsearch:/usr/share/elasticsearch/data
+      - /usr/share/elasticsearch/data
 
   postgres:
     image: postgres:alpine
     ports:
       - '5432'
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - /var/lib/postgresql/data
 
-  app:
+  test: &test
     build: .
-    entrypoint: /app/docker-entrypoint.sh
-    command: mix test
+    tty: true
     depends_on:
       - elasticsearch
       - postgres
     volumes:
       - .:/app
-      - deps:/app/deps
-      - _build:/app/_build
     environment:
       - MIX_ENV
       - TRAVIS
@@ -33,8 +30,8 @@ services:
       - POSTGRES_HOST=postgres
       - ES_URI=http://elasticsearch:9200
 
-volumes:
-  postgres: {}
-  elasticsearch: {}
-  deps: {}
-  _build: {}
+  setup:
+    <<: *test
+    command: mix do deps.get, compile
+    environment:
+      - MIX_ENV=test
