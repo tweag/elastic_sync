@@ -22,9 +22,9 @@ defmodule Mix.Tasks.ElasticSync.ReindexTest do
   end
 
   defp reindex! do
-    # ExUnit.CaptureIO.capture_io fn ->
+    ExUnit.CaptureIO.capture_io fn ->
       assert :ok == Reindex.run(["ElasticSync.TestSyncRepo", "ElasticSync.Thing"])
-    # end
+    end
   end
 
   describe "the first reindex" do
