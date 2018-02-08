@@ -102,7 +102,7 @@ end
 {:ok, 200, %{hits: %{hits: hits}}} = Repo.search(Food, query)
 ```
 
-### ElasicSync.SyncRepo
+### ElasticSync.SyncRepo
 
 Imagine you're building an app that uses Ecto. You want to synchronize changes that are made in the database with your ElasticSearch index. This is where `ElasticSync.SyncRepo` comes in handy!
 
